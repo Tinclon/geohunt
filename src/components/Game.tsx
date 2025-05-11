@@ -151,13 +151,26 @@ export const Game = () => {
 
   if (!mode) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <Container maxWidth={false} sx={{ 
+        pt: 4,
+        width: '100%',
+        height: '98vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        px: 2
+      }}>
         <Paper 
           elevation={3} 
           sx={{ 
             p: 4, 
             textAlign: 'center',
             background: `linear-gradient(45deg, ${theme.palette.background.paper}, ${theme.palette.background.default})`,
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
           }}
         >
           <Typography variant="h1" gutterBottom>
@@ -241,7 +254,15 @@ export const Game = () => {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
+    <Container maxWidth={false} sx={{ 
+      pt: 4,
+      width: '100%',
+      height: '98vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      px: 2
+    }}>
       <Paper 
         elevation={3} 
         sx={{ 
@@ -250,6 +271,10 @@ export const Game = () => {
           boxShadow: `0 0 20px ${getShadowColor()}`,
           transition: 'box-shadow 0.3s ease',
           position: 'relative',
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         <IconButton

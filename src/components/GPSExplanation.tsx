@@ -5,13 +5,24 @@ export const GPSExplanation = ({ onBack }: { onBack: () => void }) => {
   const theme = useTheme();
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Container maxWidth={false} sx={{ 
+      pt: 4,
+      width: '100%',
+      height: '98vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      px: 2
+    }}>
       <Paper 
         elevation={3} 
         sx={{ 
           p: 4,
           background: `linear-gradient(45deg, ${theme.palette.background.paper}, ${theme.palette.background.default})`,
           position: 'relative',
+          width: '100%',
+          height: '100%',
+          overflow: 'auto'
         }}
       >
         <IconButton
