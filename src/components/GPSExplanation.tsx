@@ -8,7 +8,7 @@ export const GPSExplanation = ({ onBack }: { onBack: () => void }) => {
     <Container maxWidth={false} sx={{ 
       pt: 4,
       width: '100%',
-      height: '98vh',
+      height: '92vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
