@@ -3,18 +3,15 @@ interface Coordinates {
   longitude: number;
 }
 
-const API_KEY = 'k1lbhdtu';
-const BASE_URL = 'https://keyvalue.immanuel.co/api/KeyVal';
+const SERVER_URL = 'http://localhost:3000';
 
 // Helper function to make API calls
-const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: string) => {
-  const response = await fetch(`${BASE_URL}/${endpoint}`, {
+const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) => {
+  const response = await fetch(`${SERVER_URL}${endpoint}`, {
     method,
-    mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Access-Control-Allow-Origin': '*',
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -28,21 +25,16 @@ const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: 
 
 // Store coordinates for a player
 export const storeCoordinates = async (mode: string, coordinates: Coordinates): Promise<void> => {
-  const key = `coordinates_${mode}`;
-  const value = JSON.stringify(coordinates);
-  await apiCall(`UpdateValue/${API_KEY}/${key}/${value}`, 'POST');
+  await apiCall(`/coordinates/${mode}`, 'POST', coordinates);
 };
 
 // Get coordinates for a player
 export const getOpponentCoordinates = async (mode: string): Promise<Coordinates | null> => {
-  const key = `coordinates_${mode}`;
-  const value = await apiCall(`GetValue/${API_KEY}/${key}`);
-  
-  if (!value) {
+  try {
+    return await apiCall(`/coordinates/${mode}`);
+  } catch (error) {
     return null;
   }
-  
-  return JSON.parse(value);
 };
 
 export const calculateDistance = (coord1: Coordinates, coord2: Coordinates): number => {
