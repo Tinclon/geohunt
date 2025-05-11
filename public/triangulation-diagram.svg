@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="400" fill="#1a1a1a"/>
+  
+  <!-- Grid -->
+  <g stroke="#333" stroke-width="1">
+    <line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="400" y1="0" x2="400" y2="400"/>
+  </g>
+
+  <!-- Known Point A -->
+  <circle cx="200" cy="200" r="5" fill="#ff4444"/>
+  <text x="200" y="180" text-anchor="middle" fill="#ff4444" font-size="14">Point A</text>
+
+  <!-- Known Point B -->
+  <circle cx="600" cy="200" r="5" fill="#44ff44"/>
+  <text x="600" y="180" text-anchor="middle" fill="#44ff44" font-size="14">Point B</text>
+
+  <!-- Your Location -->
+  <circle cx="400" cy="100" r="5" fill="white"/>
+  <text x="400" y="80" text-anchor="middle" fill="white" font-size="14">Your Location</text>
+
+  <!-- Angle Lines -->
+  <line x1="200" y1="200" x2="400" y2="100" stroke="#ff4444" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="600" y1="200" x2="400" y2="100" stroke="#44ff44" stroke-width="2" stroke-dasharray="5,5"/>
+
+  <!-- Angle Arcs -->
+  <path d="M 200 200 A 50 50 0 0 1 250 150" fill="none" stroke="#ff4444" stroke-width="2"/>
+  <path d="M 600 200 A 50 50 0 0 0 550 150" fill="none" stroke="#44ff44" stroke-width="2"/>
+
+  <!-- Angle Labels -->
+  <text x="230" y="170" fill="#ff4444" font-size="12">Angle α</text>
+  <text x="570" y="170" fill="#44ff44" font-size="12">Angle β</text>
+
+  <!-- Base Line -->
+  <line x1="200" y1="200" x2="600" y2="200" stroke="#666" stroke-width="1" stroke-dasharray="5,5"/>
+</svg> 
