@@ -154,7 +154,7 @@ export const Game = () => {
       <Container maxWidth={false} sx={{ 
         pt: 4,
         width: '100%',
-        height: '92vh',
+        height: '90vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -257,7 +257,7 @@ export const Game = () => {
     <Container maxWidth={false} sx={{ 
       pt: 4,
       width: '100%',
-      height: '92vh',
+      height: '90vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
