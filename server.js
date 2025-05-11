@@ -4,8 +4,26 @@ import cors from 'cors';
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Enable CORS for all routes
-app.use(cors());
+// Configure CORS
+const allowedOrigins = [
+  'http://localhost:5173', // Vite dev server
+  'https://cnielsen.github.io', // GitHub Pages
+  'https://tinclon.github.io' // GitHub Pages
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+
 app.use(express.json());
 
 // In-memory store for coordinates
@@ -34,6 +52,11 @@ app.get('/coordinates/:mode', (req, res) => {
   }
 
   res.json(coordinates);
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 app.listen(port, () => {

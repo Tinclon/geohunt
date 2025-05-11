@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: geohunt-server
+    env: node
+    buildCommand: yarn --frozen-lockfile install; npm run build
+    startCommand: yarn start
+    envVars:
+      - key: NODE_ENV
+        value: production 

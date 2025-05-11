@@ -3,7 +3,9 @@ interface Coordinates {
   longitude: number;
 }
 
-const SERVER_URL = 'http://localhost:3000';
+const SERVER_URL = import.meta.env.PROD 
+  ? 'https://geohunt-server.onrender.com'  // Production server URL
+  : 'http://localhost:3000';               // Development server URL
 
 // Helper function to make API calls
 const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) => {
