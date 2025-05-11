@@ -99,7 +99,7 @@ export const GPSExplanation = ({ onBack }: { onBack: () => void }) => {
               </Typography>
               <Box 
                 component="img"
-                src="/triangulation-diagram.svg"
+                src="triangulation-diagram.svg"
                 alt="Triangulation diagram showing angle measurements"
                 sx={{
                   maxWidth: '100%',
@@ -118,7 +118,7 @@ export const GPSExplanation = ({ onBack }: { onBack: () => void }) => {
               </Typography>
               <Box 
                 component="img"
-                src="/trilateration-diagram.svg"
+                src="trilateration-diagram.svg"
                 alt="Trilateration diagram showing intersection of spheres"
                 sx={{
                   maxWidth: '100%',
