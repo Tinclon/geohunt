@@ -64,11 +64,11 @@ export const Game = () => {
     localStorage.setItem('showGPSExplanation', 'true');
   };
 
-  const updateMyLocation = async () => {
+  const updateMyLocation = async (saveToServer: boolean = false) => {
     try {
       const myPos = await getCurrentPosition();
       setMyCoordinates(myPos);
-      if (mode) {
+      if (mode && saveToServer) {
         await storeCoordinates(mode, myPos);
       }
       setFlashMyLocation(true);
@@ -102,16 +102,18 @@ export const Game = () => {
   useEffect(() => {
     if (mode) {
       // Initial updates
-      updateMyLocation();
+      updateMyLocation(true); // Save initial position
       updateOpponentLocation();
 
       // Set up intervals
-      const myLocationInterval = setInterval(updateMyLocation, 1000); // 1 second
+      const myLocationInterval = setInterval(() => updateMyLocation(false), 1000); // Update display every second
+      const saveLocationInterval = setInterval(() => updateMyLocation(true), 30 * 1000); // Save to server every 30 seconds
       const opponentInterval = setInterval(updateOpponentLocation, 30 * 1000); // 30 seconds
 
       // Cleanup intervals
       return () => {
         clearInterval(myLocationInterval);
+        clearInterval(saveLocationInterval);
         clearInterval(opponentInterval);
       };
     }
