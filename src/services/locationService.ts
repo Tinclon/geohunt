@@ -10,8 +10,11 @@ const BASE_URL = 'https://keyvalue.immanuel.co/api/KeyVal';
 const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: string) => {
   const response = await fetch(`${BASE_URL}/${endpoint}`, {
     method,
+    mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Access-Control-Allow-Origin': '*',
     },
     body: body ? JSON.stringify(body) : undefined,
   });
