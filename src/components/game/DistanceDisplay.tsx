@@ -13,7 +13,12 @@ export const DistanceDisplay = ({ distance, highlightDistance, renderHighlighted
       }}
     >
       {distance !== null 
-        ? `${renderHighlightedNumber(Math.round(distance).toString(), highlightDistance)} meters`
+        ? (
+          <>
+            {renderHighlightedNumber(Math.round(distance).toString(), highlightDistance)}
+            {' meters'}
+          </>
+        )
         : 'Unknown'}
     </Typography>
   </Box>
