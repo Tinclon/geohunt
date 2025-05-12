@@ -3,6 +3,7 @@ import { Box, Typography, Button, Container, Paper, useTheme, IconButton } from 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates } from '../services/locationService';
 import { GPSExplanation } from './GPSExplanation';
+import { CompassIndicator } from './CompassIndicator';
 
 type GameMode = 'hawk' | 'bluebird' | 'falcon' | 'starling';
 
@@ -154,7 +155,7 @@ export const Game = () => {
       <Container maxWidth={false} sx={{ 
         pt: 4,
         width: '100%',
-        height: '90vh',
+        height: '95vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -257,7 +258,7 @@ export const Game = () => {
     <Container maxWidth={false} sx={{ 
       pt: 4,
       width: '100%',
-      height: '90vh',
+      height: '95vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -291,6 +292,8 @@ export const Game = () => {
         >
           <ArrowBackIcon />
         </IconButton>
+
+        <CompassIndicator />
 
         <Typography 
           variant="h1" 
@@ -422,10 +425,11 @@ export const Game = () => {
 
         {isClose && (
           <Typography
-            variant="h2"
+            variant="h3"
             sx={{
               color: theme.palette.error.main,
               animation: 'flash 1s infinite',
+              fontSize: '1.5rem',
               '@keyframes flash': {
                 '0%': { 
                   opacity: 1,
