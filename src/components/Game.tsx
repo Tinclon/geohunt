@@ -30,9 +30,6 @@ export const Game = () => {
   const [myCoordinates, setMyCoordinates] = useState<Coordinates | null>(null);
   const [opponentCoordinates, setOpponentCoordinates] = useState<Coordinates | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [flashMyLocation, setFlashMyLocation] = useState(false);
-  const [flashOpponentLocation, setFlashOpponentLocation] = useState(false);
-  const [flashDistance, setFlashDistance] = useState(false);
 
   const getOpponentMode = (currentMode: GameMode): GameMode => {
     switch (currentMode) {
@@ -86,12 +83,6 @@ export const Game = () => {
       if (mode && saveToServer) {
         await storeCoordinates(mode, myPos);
       }
-      setFlashMyLocation(true);
-      setFlashDistance(true);
-      setTimeout(() => {
-        setFlashMyLocation(false);
-        setFlashDistance(false);
-      }, 2000); // Flash for 2 seconds
       setError(null);
     } catch (err) {
       setError(null);
@@ -102,12 +93,6 @@ export const Game = () => {
     try {
       const opponentPos = await getOpponentCoordinates(opponentMode);
       setOpponentCoordinates(opponentPos);
-      setFlashOpponentLocation(true);
-      setFlashDistance(true);
-      setTimeout(() => {
-        setFlashOpponentLocation(false);
-        setFlashDistance(false);
-      }, 2000); // Flash for 2 seconds
       setError(null);
     } catch (err) {
       setError(null);
@@ -121,9 +106,9 @@ export const Game = () => {
       updateOpponentLocation();
 
       // Set up intervals
-      const myLocationInterval = setInterval(() => updateMyLocation(false), 1000); // Update display every second
-      const saveLocationInterval = setInterval(() => updateMyLocation(true), 30 * 1000); // Save to server every 30 seconds
-      const opponentInterval = setInterval(updateOpponentLocation, 30 * 1000); // 30 seconds
+      const myLocationInterval = setInterval(() => updateMyLocation(false), 500); // Update display every 0.5 seconds
+      const saveLocationInterval = setInterval(() => updateMyLocation(true), 5 * 1000); // Save to server every 5 seconds
+      const opponentInterval = setInterval(updateOpponentLocation, 5 * 1000); // Update opponent every 5 seconds
 
       // Cleanup intervals
       return () => {
@@ -357,32 +342,10 @@ export const Game = () => {
             <Typography variant="h2" gutterBottom sx={{ color: getModeColor(mode) }}>
               Your Location
             </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                transition: 'all 0.3s ease',
-                ...(flashMyLocation && {
-                  color: theme.palette.common.white,
-                  textShadow: `0 0 10px ${getModeColor(mode)}`,
-                  transform: 'scale(1.05)',
-                  transformOrigin: 'left',
-                }),
-              }}
-            >
+            <Typography variant="body1">
               Latitude: {myCoordinates.latitude.toFixed(6)}
             </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                transition: 'all 0.3s ease',
-                ...(flashMyLocation && {
-                  color: theme.palette.common.white,
-                  textShadow: `0 0 10px ${getModeColor(mode)}`,
-                  transform: 'scale(1.05)',
-                  transformOrigin: 'left',
-                }),
-              }}
-            >
+            <Typography variant="body1">
               Longitude: {myCoordinates.longitude.toFixed(6)}
             </Typography>
           </Box>
@@ -393,32 +356,10 @@ export const Game = () => {
             <Typography variant="h2" gutterBottom sx={{ color: getModeColor(opponentMode) }}>
               {opponentMode.charAt(0).toUpperCase() + opponentMode.slice(1)}'s Location
             </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                transition: 'all 0.3s ease',
-                ...(flashOpponentLocation && {
-                  color: theme.palette.common.white,
-                  textShadow: `0 0 10px ${getModeColor(opponentMode)}`,
-                  transform: 'scale(1.05)',
-                  transformOrigin: 'left',
-                }),
-              }}
-            >
+            <Typography variant="body1">
               Latitude: {opponentCoordinates.latitude.toFixed(6)}
             </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                transition: 'all 0.3s ease',
-                ...(flashOpponentLocation && {
-                  color: theme.palette.common.white,
-                  textShadow: `0 0 10px ${getModeColor(opponentMode)}`,
-                  transform: 'scale(1.05)',
-                  transformOrigin: 'left',
-                }),
-              }}
-            >
+            <Typography variant="body1">
               Longitude: {opponentCoordinates.longitude.toFixed(6)}
             </Typography>
           </Box>
@@ -442,13 +383,6 @@ export const Game = () => {
           <Typography 
             variant="body1"
             sx={{
-              transition: 'all 0.3s ease',
-              ...(flashDistance && {
-                color: theme.palette.common.white,
-                textShadow: `0 0 10px ${theme.palette.common.white}`,
-                transform: 'scale(1.05)',
-                transformOrigin: 'left',
-              }),
               ...(!distance && { color: theme.palette.grey[500] }),
             }}
           >
