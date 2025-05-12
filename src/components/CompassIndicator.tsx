@@ -18,32 +18,6 @@ const getDirectionSymbol = (degrees: number): string => {
   return '↑'; // Default to North
 };
 
-// Convert device orientation to compass heading
-const calculateHeading = (alpha: number | null, beta: number | null, gamma: number | null): number => {
-  if (alpha === null || beta === null || gamma === null) return 0;
-
-  // Convert angles to radians
-  const alphaRad = (alpha * Math.PI) / 180;
-  const betaRad = (beta * Math.PI) / 180;
-  const gammaRad = (gamma * Math.PI) / 180;
-
-  // Calculate the rotation matrix
-  const x = Math.cos(betaRad) * Math.cos(gammaRad);
-  const y = Math.cos(betaRad) * Math.sin(gammaRad);
-
-  // Calculate the heading
-  let heading = Math.atan2(y, x);
-  
-  // Adjust for device orientation
-  heading = heading + alphaRad;
-  
-  // Convert back to degrees and normalize
-  heading = (heading * 180) / Math.PI;
-  heading = (-heading + 360) % 360; // Negate the heading to fix the reversed direction
-
-  return heading;
-};
-
 export const CompassIndicator = () => {
   const theme = useTheme();
   const [direction, setDirection] = useState<string>('↑');
