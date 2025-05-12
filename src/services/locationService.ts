@@ -26,8 +26,8 @@ const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: 
 };
 
 // Store coordinates for a player
-export const storeCoordinates = async (mode: string, coordinates: Coordinates): Promise<void> => {
-  await apiCall(`/coordinates/${mode}`, 'POST', coordinates);
+export const storeCoordinates = async (mode: string, coordinates: Coordinates, difficulty: string): Promise<void> => {
+  await apiCall(`/coordinates/${mode}`, 'POST', { ...coordinates, difficulty });
 };
 
 // Get coordinates for a player

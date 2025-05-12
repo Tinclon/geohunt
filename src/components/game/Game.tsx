@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Typography, Container, Paper, useTheme, IconButton } from '@mui/material';
+import { Typography, Container, Paper, useTheme, IconButton, Button, ButtonGroup } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates, watchPosition } from '../../services/locationService';
 import { GPSExplanation } from '../GPSExplanation';
@@ -10,6 +10,8 @@ import { DistanceDisplay } from './DistanceDisplay';
 import { ModeSelection } from './ModeSelection';
 import type { GameMode, Coordinates } from './types';
 import { findChangedDigits, getOpponentMode } from './utils';
+
+type Difficulty = 'Hard' | 'Medium' | 'Easy';
 
 export const Game = () => {
   const theme = useTheme();
@@ -23,6 +25,12 @@ export const Game = () => {
     return (savedMode === 'hawk' || savedMode === 'bluebird' || savedMode === 'falcon' || savedMode === 'starling') 
       ? savedMode as GameMode 
       : null;
+  });
+  const [difficulty, setDifficulty] = useState<Difficulty>(() => {
+    const savedDifficulty = localStorage.getItem('gameDifficulty');
+    return (savedDifficulty === 'Hard' || savedDifficulty === 'Medium' || savedDifficulty === 'Easy')
+      ? savedDifficulty as Difficulty
+      : 'Hard';
   });
   const prevMyLatRef = useRef<string>('');
   const prevMyLngRef = useRef<string>('');
@@ -44,6 +52,8 @@ export const Game = () => {
   const [highlightOpponentLng, setHighlightOpponentLng] = useState<number[]>([]);
   const [highlightDistance, setHighlightDistance] = useState<number[]>([]);
   const watchIdRef = useRef<number>(-1);
+  const [prevMyCoordinates, setPrevMyCoordinates] = useState<Coordinates | null>(null);
+  const [prevOpponentCoordinates, setPrevOpponentCoordinates] = useState<Coordinates | null>(null);
 
   const opponentMode = mode ? getOpponentMode(mode) : 'hawk';
 
@@ -75,6 +85,15 @@ export const Game = () => {
   const handleCoordinatesExplanationClick = () => {
     setShowCoordinatesExplanation(true);
     localStorage.setItem('showCoordinatesExplanation', 'true');
+  };
+
+  const handleDifficultyChange = () => {
+    const difficulties: Difficulty[] = ['Hard', 'Medium', 'Easy'];
+    const currentIndex = difficulties.indexOf(difficulty);
+    const nextIndex = (currentIndex + 1) % difficulties.length;
+    const newDifficulty = difficulties[nextIndex];
+    setDifficulty(newDifficulty);
+    localStorage.setItem('gameDifficulty', newDifficulty);
   };
 
   const formatCoordinate = (value: number) => {
@@ -112,6 +131,11 @@ export const Game = () => {
       const newLat = formatCoordinate(myPos.latitude);
       const newLng = formatCoordinate(myPos.longitude);
 
+      // Store current coordinates as previous before updating
+      if (myCoordinates) {
+        setPrevMyCoordinates({ ...myCoordinates });
+      }
+
       // Handle latitude changes
       if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
         const latChanges = findChangedDigits(prevMyLatRef.current, newLat, true);
@@ -132,7 +156,7 @@ export const Game = () => {
       setMyCoordinates(myPos);
       
       if (mode && saveToServer) {
-        await storeCoordinates(mode, myPos);
+        await storeCoordinates(mode, myPos, difficulty);
       }
       setError(null);
     } catch (err) {
@@ -146,6 +170,11 @@ export const Game = () => {
       if (opponentPos) {
         const newLat = formatCoordinate(opponentPos.latitude);
         const newLng = formatCoordinate(opponentPos.longitude);
+
+        // Store current coordinates as previous before updating
+        if (opponentCoordinates) {
+          setPrevOpponentCoordinates({ ...opponentCoordinates });
+        }
 
         // Handle latitude changes
         if (prevOpponentLatRef.current && prevOpponentLatRef.current !== newLat) {
@@ -188,6 +217,11 @@ export const Game = () => {
           const newLat = formatCoordinate(position.latitude);
           const newLng = formatCoordinate(position.longitude);
 
+          // Store current coordinates as previous before updating
+          if (myCoordinates) {
+            setPrevMyCoordinates({ ...myCoordinates });
+          }
+
           // Handle latitude changes
           if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
             const latChanges = findChangedDigits(prevMyLatRef.current, newLat, true);
@@ -215,7 +249,7 @@ export const Game = () => {
       // Set up intervals for server updates and opponent location
       const saveLocationInterval = setInterval(() => {
         if (myCoordinates) {
-          storeCoordinates(mode, myCoordinates);
+          storeCoordinates(mode, myCoordinates, difficulty);
         }
       }, 5 * 1000);
       const opponentInterval = setInterval(updateOpponentLocation, 5 * 1000);
@@ -387,6 +421,8 @@ export const Game = () => {
           highlightLng={highlightMyLng}
           color={getModeColor(mode)}
           renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, true)}
+          prevCoordinates={prevMyCoordinates}
+          difficulty={difficulty}
         />
 
         <LocationDisplay
@@ -396,6 +432,8 @@ export const Game = () => {
           highlightLng={highlightOpponentLng}
           color={getModeColor(opponentMode)}
           renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, true)}
+          prevCoordinates={prevOpponentCoordinates}
+          difficulty={difficulty}
         />
 
         <DistanceDisplay
@@ -431,6 +469,28 @@ export const Game = () => {
             WARNING: Opponent is nearby!
           </Typography>
         )}
+
+        <Button
+          variant="contained"
+          onClick={handleDifficultyChange}
+          sx={{ 
+            mt: 'auto',
+            alignSelf: 'center',
+            mb: 2,
+            minWidth: 120,
+            color: 'white',
+            bgcolor: difficulty === 'Hard' ? 'error.main' : 
+                    difficulty === 'Medium' ? 'warning.main' : 
+                    'success.main',
+            '&:hover': {
+              bgcolor: difficulty === 'Hard' ? 'error.dark' : 
+                      difficulty === 'Medium' ? 'warning.dark' : 
+                      'success.dark',
+            }
+          }}
+        >
+          {difficulty}
+        </Button>
       </Paper>
     </Container>
   );

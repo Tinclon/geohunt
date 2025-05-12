@@ -1,7 +1,16 @@
 import { Box, Typography } from '@mui/material';
 import type { LocationDisplayProps } from './types';
 
-export const LocationDisplay = ({ title, coordinates, highlightLat, highlightLng, color, renderHighlightedNumber }: LocationDisplayProps) => {
+export const LocationDisplay = ({ 
+  title, 
+  coordinates, 
+  highlightLat, 
+  highlightLng, 
+  color, 
+  renderHighlightedNumber,
+  prevCoordinates,
+  difficulty
+}: LocationDisplayProps) => {
   if (!coordinates) {
     return (
       <Box sx={{ mb: 3 }}>
@@ -21,12 +30,20 @@ export const LocationDisplay = ({ title, coordinates, highlightLat, highlightLng
 
   const monospaceFont = '"Roboto Mono", "SF Mono", "Consolas", "Liberation Mono", "Menlo", "Courier", monospace';
 
+  const showDirection = difficulty !== 'Hard' && prevCoordinates;
+  const latDirection = showDirection && prevCoordinates.latitude !== coordinates.latitude
+    ? coordinates.latitude > prevCoordinates.latitude ? '↑' : '↓'
+    : null;
+  const lngDirection = showDirection && prevCoordinates.longitude !== coordinates.longitude
+    ? coordinates.longitude > prevCoordinates.longitude ? '→' : '←'
+    : null;
+
   return (
     <Box sx={{ mb: 3 }}>
       <Typography variant="h2" gutterBottom sx={{ color }}>
         {title}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
         <Typography variant="body1" sx={{ 
           minWidth: '80px',
           fontFamily: monospaceFont
@@ -40,8 +57,23 @@ export const LocationDisplay = ({ title, coordinates, highlightLat, highlightLng
         }}>
           {renderHighlightedNumber(formatCoordinate(coordinates.latitude), highlightLat)}
         </Typography>
+        {latDirection && (
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: 'primary.main',
+              opacity: highlightLat.length > 0 ? 1 : 0,
+              transition: 'opacity 0.4s ease',
+              ml: 1,
+              fontFamily: monospaceFont,
+              fontSize: '1.2rem'
+            }}
+          >
+            {latDirection}
+          </Typography>
+        )}
       </Box>
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
         <Typography variant="body1" sx={{ 
           minWidth: '80px',
           fontFamily: monospaceFont
@@ -55,6 +87,21 @@ export const LocationDisplay = ({ title, coordinates, highlightLat, highlightLng
         }}>
           {renderHighlightedNumber(formatCoordinate(coordinates.longitude), highlightLng)}
         </Typography>
+        {lngDirection && (
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: 'primary.main',
+              opacity: highlightLng.length > 0 ? 1 : 0,
+              transition: 'opacity 0.4s ease',
+              ml: 1,
+              fontFamily: monospaceFont,
+              fontSize: '1.2rem'
+            }}
+          >
+            {lngDirection}
+          </Typography>
+        )}
       </Box>
     </Box>
   );

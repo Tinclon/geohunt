@@ -12,6 +12,8 @@ export interface LocationDisplayProps {
   highlightLng: number[];
   color: string;
   renderHighlightedNumber: (value: string, highlights: number[]) => React.ReactNode[];
+  prevCoordinates: Coordinates | null;
+  difficulty: 'Hard' | 'Medium' | 'Easy';
 }
 
 export interface DistanceDisplayProps {
