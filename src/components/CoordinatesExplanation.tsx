@@ -1,8 +1,15 @@
 import { Box, Typography, Container, Paper, IconButton, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { decimalToDMS, formatDMS } from './game/utils';
 
 export const CoordinatesExplanation = ({ onBack }: { onBack: () => void }) => {
   const theme = useTheme();
+
+  const cities = [
+    { name: 'Vancouver', lat: 49.2827, lng: -123.1207 },
+    { name: 'Paris', lat: 48.8566, lng: 2.3522 },
+    { name: 'Creston', lat: 49.0999, lng: -116.5021 }
+  ];
 
   return (
     <Container maxWidth={false} sx={{ 
@@ -139,15 +146,27 @@ export const CoordinatesExplanation = ({ onBack }: { onBack: () => void }) => {
           Example Coordinates
         </Typography>
 
-        <Typography variant="body1" paragraph>
-          Vancouver: 49.2827, -123.1207
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Paris: 48.8566, 2.3522
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Creston: 49.0999, -116.5021
-        </Typography>
+        {cities.map((city) => {
+          const latDMS = decimalToDMS(city.lat, true);
+          const lngDMS = decimalToDMS(city.lng, false);
+          return (
+            <Box key={city.name} sx={{ mb: 2 }}>
+              <Typography variant="body1" paragraph>
+                {city.name}:
+              </Typography>
+              <Box sx={{ pl: 2 }}>
+                <Box sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', p: 1, borderRadius: 1 }}>
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                    Decimal: {city.lat.toFixed(4)}, {city.lng.toFixed(4)}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                    DMS: &nbsp;&nbsp;&nbsp;{formatDMS(latDMS)}, {formatDMS(lngDMS)}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          );
+        })}
 
         <Typography variant="h3" gutterBottom sx={{ mt: 4, color: theme.palette.warning.main }}>
           Precision

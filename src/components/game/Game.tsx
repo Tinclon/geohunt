@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Typography, Container, Paper, useTheme, IconButton, Button } from '@mui/material';
+import { Typography, Container, Paper, useTheme, IconButton, Button, Box } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates, watchPosition } from '../../services/locationService';
 import { GPSExplanation } from '../GPSExplanation';
@@ -9,7 +9,8 @@ import { LocationDisplay } from './LocationDisplay';
 import { DistanceDisplay } from './DistanceDisplay';
 import { ModeSelection } from './ModeSelection';
 import type { GameMode, Coordinates } from './types';
-import { findChangedDigits, getOpponentMode } from './utils';
+import type { CoordinateSystem } from './utils';
+import { findChangedDigitsDecimal, findChangedDMS, getOpponentMode, decimalToDMS, formatDMS } from './utils';
 
 type Difficulty = 'Hard' | 'Medium' | 'Easy';
 
@@ -54,6 +55,10 @@ export const Game = () => {
   const watchIdRef = useRef<number>(-1);
   const [prevMyCoordinates, setPrevMyCoordinates] = useState<Coordinates | null>(null);
   const [prevOpponentCoordinates, setPrevOpponentCoordinates] = useState<Coordinates | null>(null);
+  const [coordinateSystem, setCoordinateSystem] = useState<CoordinateSystem>(() => {
+    const saved = localStorage.getItem('coordinateSystem');
+    return (saved === 'decimal' || saved === 'dms') ? saved as CoordinateSystem : 'decimal';
+  });
 
   const opponentMode = mode ? getOpponentMode(mode) : 'hawk';
 
@@ -101,15 +106,26 @@ export const Game = () => {
     }
   };
 
-  const formatCoordinate = (value: number) => {
-    return value.toFixed(6).replace(/\.?0+$/, '');
+  const handleCoordinateSystemChange = () => {
+    const newSystem = coordinateSystem === 'decimal' ? 'dms' : 'decimal';
+    setCoordinateSystem(newSystem);
+    localStorage.setItem('coordinateSystem', newSystem);
+  };
+
+  const formatCoordinate = (value: number, isLatitude: boolean) => {
+    if (coordinateSystem === 'decimal') {
+      return value.toFixed(6).replace(/\.?0+$/, '');
+    } else {
+      const dms = decimalToDMS(value, isLatitude);
+      return formatDMS(dms);
+    }
   };
 
   const updateMyLocation = async (saveToServer: boolean = false) => {
     try {
       const myPos = await getCurrentPosition();
-      const newLat = formatCoordinate(myPos.latitude);
-      const newLng = formatCoordinate(myPos.longitude);
+      const newLat = formatCoordinate(myPos.latitude, true);
+      const newLng = formatCoordinate(myPos.longitude, false);
 
       // Store current coordinates as previous before updating
       if (myCoordinates) {
@@ -118,14 +134,18 @@ export const Game = () => {
 
       // Handle latitude changes
       if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-        const latChanges = findChangedDigits(prevMyLatRef.current, newLat, true);
+        const latChanges = coordinateSystem === 'decimal' 
+          ? findChangedDigitsDecimal(prevMyLatRef.current, newLat, true)
+          : findChangedDMS(prevMyLatRef.current, newLat);
         setHighlightMyLat(latChanges);
         setTimeout(() => setHighlightMyLat([]), 400);
       }
 
       // Handle longitude changes
       if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-        const lngChanges = findChangedDigits(prevMyLngRef.current, newLng, true);
+        const lngChanges = coordinateSystem === 'decimal'
+          ? findChangedDigitsDecimal(prevMyLngRef.current, newLng, true)
+          : findChangedDMS(prevMyLngRef.current, newLng);
         setHighlightMyLng(lngChanges);
         setTimeout(() => setHighlightMyLng([]), 400);
       }
@@ -148,8 +168,8 @@ export const Game = () => {
     try {
       const opponentPos = await getOpponentCoordinates(opponentMode);
       if (opponentPos) {
-        const newLat = formatCoordinate(opponentPos.latitude);
-        const newLng = formatCoordinate(opponentPos.longitude);
+        const newLat = formatCoordinate(opponentPos.latitude, true);
+        const newLng = formatCoordinate(opponentPos.longitude, false);
 
         // Store current coordinates as previous before updating
         if (opponentCoordinates) {
@@ -158,14 +178,18 @@ export const Game = () => {
 
         // Handle latitude changes
         if (prevOpponentLatRef.current && prevOpponentLatRef.current !== newLat) {
-          const latChanges = findChangedDigits(prevOpponentLatRef.current, newLat, true);
+          const latChanges = coordinateSystem === 'decimal'
+            ? findChangedDigitsDecimal(prevOpponentLatRef.current, newLat, true)
+            : findChangedDMS(prevOpponentLatRef.current, newLat);
           setHighlightOpponentLat(latChanges);
           setTimeout(() => setHighlightOpponentLat([]), 400);
         }
 
         // Handle longitude changes
         if (prevOpponentLngRef.current && prevOpponentLngRef.current !== newLng) {
-          const lngChanges = findChangedDigits(prevOpponentLngRef.current, newLng, true);
+          const lngChanges = coordinateSystem === 'decimal'
+            ? findChangedDigitsDecimal(prevOpponentLngRef.current, newLng, true)
+            : findChangedDMS(prevOpponentLngRef.current, newLng);
           setHighlightOpponentLng(lngChanges);
           setTimeout(() => setHighlightOpponentLng([]), 400);
         }
@@ -206,8 +230,8 @@ export const Game = () => {
       // Set up watch position
       watchIdRef.current = watchPosition(
         (position) => {
-          const newLat = formatCoordinate(position.latitude);
-          const newLng = formatCoordinate(position.longitude);
+          const newLat = formatCoordinate(position.latitude, true);
+          const newLng = formatCoordinate(position.longitude, false);
 
           // Store current coordinates as previous before updating
           if (myCoordinates) {
@@ -216,14 +240,18 @@ export const Game = () => {
 
           // Handle latitude changes
           if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-            const latChanges = findChangedDigits(prevMyLatRef.current, newLat, true);
+            const latChanges = coordinateSystem === 'decimal' 
+              ? findChangedDigitsDecimal(prevMyLatRef.current, newLat, true)
+              : findChangedDMS(prevMyLatRef.current, newLat);
             setHighlightMyLat(latChanges);
             setTimeout(() => setHighlightMyLat([]), 400);
           }
 
           // Handle longitude changes
           if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-            const lngChanges = findChangedDigits(prevMyLngRef.current, newLng, true);
+            const lngChanges = coordinateSystem === 'decimal'
+              ? findChangedDigitsDecimal(prevMyLngRef.current, newLng, true)
+              : findChangedDMS(prevMyLngRef.current, newLng);
             setHighlightMyLng(lngChanges);
             setTimeout(() => setHighlightMyLng([]), 400);
           }
@@ -263,7 +291,7 @@ export const Game = () => {
       
       // Handle distance changes
       if (prevDistanceRef.current && prevDistanceRef.current !== newDistance) {
-        const distanceChanges = findChangedDigits(prevDistanceRef.current, newDistance, false);
+        const distanceChanges = findChangedDigitsDecimal(prevDistanceRef.current, newDistance, false);
         setHighlightDistance(distanceChanges);
         setTimeout(() => setHighlightDistance([]), 400);
       }
@@ -415,6 +443,7 @@ export const Game = () => {
           renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, true)}
           prevCoordinates={prevMyCoordinates}
           difficulty={difficulty}
+          coordinateSystem={coordinateSystem}
         />
 
         <LocationDisplay
@@ -426,6 +455,7 @@ export const Game = () => {
           renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, true)}
           prevCoordinates={prevOpponentCoordinates}
           difficulty={difficulty}
+          coordinateSystem={coordinateSystem}
         />
 
         <DistanceDisplay
@@ -465,35 +495,56 @@ export const Game = () => {
           </Typography>
         )}
 
-        <Button
-          variant="contained"
-          onClick={handleDifficultyChange}
-          disabled={mode === 'bluebird' || mode === 'starling'}
-          sx={{ 
-            mt: 'auto',
-            alignSelf: 'center',
-            mb: 2,
-            minWidth: 120,
-            color: 'white',
-            bgcolor: difficulty === 'Hard' ? 'error.main' : 
-                    difficulty === 'Medium' ? 'warning.main' : 
-                    'success.main',
-            '&:hover': {
-              bgcolor: difficulty === 'Hard' ? 'error.dark' : 
-                      difficulty === 'Medium' ? 'warning.dark' : 
-                      'success.dark',
-            },
-            '&.Mui-disabled': {
-              bgcolor: difficulty === 'Hard' ? 'error.dark' : 
-                      difficulty === 'Medium' ? 'warning.dark' : 
-                      'success.dark',
-              opacity: 0.5,
-              color: 'white'
-            }
-          }}
-        >
-          {difficulty}
-        </Button>
+        <Box sx={{ 
+          mt: 'auto',
+          display: 'flex',
+          gap: 2,
+          justifyContent: 'center',
+          mb: 2
+        }}>
+          <Button
+            variant="contained"
+            onClick={handleCoordinateSystemChange}
+            sx={{ 
+              minWidth: 120,
+              bgcolor: 'grey.700',
+              '&:hover': {
+                bgcolor: 'grey.600',
+              },
+              color: 'grey.300',
+              fontWeight: 'bold'
+            }}
+          >
+            {coordinateSystem === 'decimal' ? 'DMS' : 'Decimal'}
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleDifficultyChange}
+            disabled={mode === 'bluebird' || mode === 'starling'}
+            sx={{ 
+              minWidth: 120,
+              color: 'white',
+              bgcolor: difficulty === 'Hard' ? 'error.main' : 
+                      difficulty === 'Medium' ? 'warning.main' : 
+                      'success.main',
+              '&:hover': {
+                bgcolor: difficulty === 'Hard' ? 'error.dark' : 
+                        difficulty === 'Medium' ? 'warning.dark' : 
+                        'success.dark',
+              },
+              '&.Mui-disabled': {
+                bgcolor: difficulty === 'Hard' ? 'error.dark' : 
+                        difficulty === 'Medium' ? 'warning.dark' : 
+                        'success.dark',
+                opacity: 0.5,
+                color: 'white'
+              }
+            }}
+          >
+            {difficulty}
+          </Button>
+        </Box>
       </Paper>
     </Container>
   );
