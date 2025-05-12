@@ -394,13 +394,15 @@ export const Game = () => {
 
   return (
     <Container maxWidth={false} sx={{ 
-      pt: 4,
+      pt: 2,
+      pb: 2,
       width: '100%',
-      height: '95vh',
+      height: '100vh',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'center',
-      px: 2
+      px: 2,
+      overflow: 'hidden'
     }}>
       <Paper 
         elevation={3} 
@@ -413,7 +415,8 @@ export const Game = () => {
           width: '100%',
           height: '100%',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          overflow: 'auto'
         }}
       >
         <IconButton
@@ -495,6 +498,7 @@ export const Game = () => {
               color: theme.palette.error.main,
               animation: 'flash 1s infinite',
               fontSize: '1.2rem',
+              mb: 4,
               '@keyframes flash': {
                 '0%': { 
                   opacity: 1,

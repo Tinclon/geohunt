@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme, useMediaQuery } from '@mui/material';
 import type { LocationDisplayProps } from './types';
 
 export const LocationDisplay = ({ 
@@ -11,6 +11,9 @@ export const LocationDisplay = ({
   prevCoordinates,
   difficulty
 }: LocationDisplayProps) => {
+  const theme = useTheme();
+  const isPortrait = useMediaQuery(theme.breakpoints.down('sm'));
+
   if (!coordinates) {
     return (
       <Box sx={{ mb: 3 }}>
@@ -39,65 +42,87 @@ export const LocationDisplay = ({
       <Typography variant="h2" gutterBottom sx={{ color }}>
         {title}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: isPortrait ? 'column' : 'row',
+        gap: isPortrait ? 0.5 : 2, 
+        alignItems: isPortrait ? 'flex-start' : 'center'
+      }}>
         <Typography variant="body1" sx={{ 
-          minWidth: '80px',
+          minWidth: isPortrait ? 'auto' : '80px',
           fontFamily: monospaceFont
         }}>
           Latitude:&nbsp;
         </Typography>
-        <Typography variant="body1" sx={{ 
-          fontFamily: monospaceFont,
-          minWidth: '120px',
-          textAlign: 'right'
+        <Box sx={{ 
+          display: 'flex',
+          alignItems: 'center',
+          pl: isPortrait ? 2 : 0
         }}>
-          {renderHighlightedNumber(coordinates.latitude, highlightLat)}
-        </Typography>
-        {latDirection && (
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              color: 'primary.main',
-              opacity: highlightLat.length > 0 ? 1 : 0,
-              transition: 'opacity 0.4s ease',
-              ml: 1,
-              fontFamily: monospaceFont,
-              fontSize: '1.2rem'
-            }}
-          >
-            {latDirection}
+          <Typography variant="body1" sx={{ 
+            fontFamily: monospaceFont,
+            minWidth: isPortrait ? 'auto' : '120px',
+            textAlign: isPortrait ? 'left' : 'right'
+          }}>
+            {renderHighlightedNumber(coordinates.latitude, highlightLat)}
           </Typography>
-        )}
+          {latDirection && (
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: 'primary.main',
+                opacity: highlightLat.length > 0 ? 1 : 0,
+                transition: 'opacity 0.4s ease',
+                ml: 1,
+                fontFamily: monospaceFont,
+                fontSize: '1.2rem'
+              }}
+            >
+              {latDirection}
+            </Typography>
+          )}
+        </Box>
       </Box>
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: isPortrait ? 'column' : 'row',
+        gap: isPortrait ? 0.5 : 2, 
+        alignItems: isPortrait ? 'flex-start' : 'center'
+      }}>
         <Typography variant="body1" sx={{ 
-          minWidth: '80px',
+          minWidth: isPortrait ? 'auto' : '80px',
           fontFamily: monospaceFont
         }}>
           Longitude:
         </Typography>
-        <Typography variant="body1" sx={{ 
-          fontFamily: monospaceFont,
-          minWidth: '120px',
-          textAlign: 'right'
+        <Box sx={{ 
+          display: 'flex',
+          alignItems: 'center',
+          pl: isPortrait ? 2 : 0
         }}>
-          {renderHighlightedNumber(coordinates.longitude, highlightLng)}
-        </Typography>
-        {lngDirection && (
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              color: 'primary.main',
-              opacity: highlightLng.length > 0 ? 1 : 0,
-              transition: 'opacity 0.4s ease',
-              ml: 1,
-              fontFamily: monospaceFont,
-              fontSize: '1.2rem'
-            }}
-          >
-            {lngDirection}
+          <Typography variant="body1" sx={{ 
+            fontFamily: monospaceFont,
+            minWidth: isPortrait ? 'auto' : '120px',
+            textAlign: isPortrait ? 'left' : 'right'
+          }}>
+            {renderHighlightedNumber(coordinates.longitude, highlightLng)}
           </Typography>
-        )}
+          {lngDirection && (
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: 'primary.main',
+                opacity: highlightLng.length > 0 ? 1 : 0,
+                transition: 'opacity 0.4s ease',
+                ml: 1,
+                fontFamily: monospaceFont,
+                fontSize: '1.2rem'
+              }}
+            >
+              {lngDirection}
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Box>
   );
