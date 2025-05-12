@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+<svg width="100%" height="100%" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
   <!-- Background -->
-  <rect width="800" height="600" fill="#1a1a1a"/>
+  <rect width="600" height="800" fill="#1a1a1a"/>
   
   <!-- Grid -->
   <g stroke="#333" stroke-width="1">
-    <line x1="0" y1="300" x2="800" y2="300"/>
-    <line x1="400" y1="0" x2="400" y2="600"/>
+    <line x1="0" y1="400" x2="600" y2="400"/>
+    <line x1="300" y1="0" x2="300" y2="800"/>
   </g>
 
   <!-- Gradients -->
@@ -28,47 +28,47 @@
   <!-- Satellite A Sphere -->
   <g>
     <!-- Sphere fill -->
-    <circle cx="300" cy="350" r="150" fill="url(#sphereA)"/>
+    <circle cx="200" cy="450" r="120" fill="url(#sphereA)"/>
     <!-- Sphere outline -->
-    <circle cx="300" cy="350" r="150" fill="none" stroke="#ff4444" stroke-width="2"/>
+    <circle cx="200" cy="450" r="120" fill="none" stroke="#ff4444" stroke-width="2"/>
     <!-- Satellite point -->
-    <circle cx="300" cy="350" r="5" fill="#ff4444"/>
-    <text x="300" y="330" text-anchor="middle" fill="#ff4444" font-size="14">Satellite A</text>
+    <circle cx="200" cy="450" r="5" fill="#ff4444"/>
+    <text x="200" y="430" text-anchor="middle" fill="#ff4444" font-size="14">Satellite A</text>
   </g>
 
   <!-- Satellite B Sphere -->
   <g>
     <!-- Sphere fill -->
-    <circle cx="500" cy="350" r="150" fill="url(#sphereB)"/>
+    <circle cx="400" cy="450" r="120" fill="url(#sphereB)"/>
     <!-- Sphere outline -->
-    <circle cx="500" cy="350" r="150" fill="none" stroke="#44ff44" stroke-width="2"/>
+    <circle cx="400" cy="450" r="120" fill="none" stroke="#44ff44" stroke-width="2"/>
     <!-- Satellite point -->
-    <circle cx="500" cy="350" r="5" fill="#44ff44"/>
-    <text x="500" y="330" text-anchor="middle" fill="#44ff44" font-size="14">Satellite B</text>
+    <circle cx="400" cy="450" r="5" fill="#44ff44"/>
+    <text x="400" y="430" text-anchor="middle" fill="#44ff44" font-size="14">Satellite B</text>
   </g>
 
   <!-- Satellite C Sphere -->
   <g>
     <!-- Sphere fill -->
-    <circle cx="400" cy="200" r="150" fill="url(#sphereC)"/>
+    <circle cx="300" cy="250" r="120" fill="url(#sphereC)"/>
     <!-- Sphere outline -->
-    <circle cx="400" cy="200" r="150" fill="none" stroke="#4444ff" stroke-width="2"/>
+    <circle cx="300" cy="250" r="120" fill="none" stroke="#4444ff" stroke-width="2"/>
     <!-- Satellite point -->
-    <circle cx="400" cy="200" r="5" fill="#4444ff"/>
-    <text x="400" y="180" text-anchor="middle" fill="#4444ff" font-size="14">Satellite C</text>
+    <circle cx="300" cy="250" r="5" fill="#4444ff"/>
+    <text x="300" y="230" text-anchor="middle" fill="#4444ff" font-size="14">Satellite C</text>
   </g>
 
   <!-- Intersection Point (where all three spheres meet) -->
-  <circle cx="400" cy="300" r="8" fill="white"/>
-  <text x="400" y="280" text-anchor="middle" fill="white" font-size="14">Your Location</text>
+  <circle cx="300" cy="350" r="8" fill="white"/>
+  <text x="300" y="330" text-anchor="middle" fill="white" font-size="14">Your Location</text>
 
   <!-- Distance Lines -->
-  <line x1="300" y1="350" x2="400" y2="300" stroke="#ff4444" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="500" y1="350" x2="400" y2="300" stroke="#44ff44" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="400" y1="200" x2="400" y2="300" stroke="#4444ff" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="200" y1="450" x2="300" y2="350" stroke="#ff4444" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="400" y1="450" x2="300" y2="350" stroke="#44ff44" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="300" y1="250" x2="300" y2="350" stroke="#4444ff" stroke-width="2" stroke-dasharray="5,5"/>
 
   <!-- Distance Labels -->
-  <text x="350" y="325" text-anchor="middle" fill="#ff4444" font-size="12">Distance A</text>
-  <text x="450" y="325" text-anchor="middle" fill="#44ff44" font-size="12">Distance B</text>
-  <text x="420" y="250" text-anchor="middle" fill="#4444ff" font-size="12">Distance C</text>
+  <text x="250" y="400" text-anchor="middle" fill="#ff4444" font-size="12">Distance A</text>
+  <text x="350" y="400" text-anchor="middle" fill="#44ff44" font-size="12">Distance B</text>
+  <text x="320" y="300" text-anchor="middle" fill="#4444ff" font-size="12">Distance C</text>
 </svg> 

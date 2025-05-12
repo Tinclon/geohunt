@@ -89,7 +89,7 @@ export const GPSExplanation = ({ onBack }: { onBack: () => void }) => {
           </Typography>
           <Box sx={{ 
             display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
             gap: 4,
             alignItems: 'center'
           }}>
