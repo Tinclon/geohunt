@@ -1,4 +1,4 @@
-export type GameMode = 'hawk' | 'bluebird' | 'falcon' | 'starling';
+export type GameRole = 'hawk' | 'bluebird' | 'falcon' | 'starling';
 
 export interface Coordinates {
   latitude: number;
@@ -27,8 +27,8 @@ export interface DistanceDisplayProps {
   difficulty: 'Hard' | 'Medium' | 'Easy';
 }
 
-export interface ModeSelectionProps {
-  onModeSelect: (mode: GameMode) => void;
+export interface RoleSelectionProps {
+  onRoleSelect: (role: GameRole) => void;
   onGPSExplanationClick: () => void;
   onCoordinatesExplanationClick: () => void;
   theme: any;

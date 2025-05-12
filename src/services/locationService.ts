@@ -23,14 +23,14 @@ const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: 
 };
 
 // Store coordinates for a player
-export const storeCoordinates = async (mode: string, coordinates: Coordinates): Promise<void> => {
-  await apiCall(`/coordinates/${mode}`, 'POST', coordinates);
+export const storeCoordinates = async (role: string, coordinates: Coordinates): Promise<void> => {
+  await apiCall(`/coordinates/${role}`, 'POST', coordinates);
 };
 
 // Get coordinates for a player
-export const getOpponentCoordinates = async (mode: string): Promise<Coordinates | null> => {
+export const getOpponentCoordinates = async (role: string): Promise<Coordinates | null> => {
   try {
-    return await apiCall(`/coordinates/${mode}`);
+    return await apiCall(`/coordinates/${role}`);
   } catch (error) {
     return null;
   }

@@ -1,7 +1,7 @@
 import { Box, Typography, Button, Container, Paper } from '@mui/material';
-import type { ModeSelectionProps } from './types';
+import type { RoleSelectionProps } from './types';
 
-export const RoleSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinatesExplanationClick, theme }: ModeSelectionProps) => (
+export const RoleSelection = ({ onRoleSelect, onGPSExplanationClick, onCoordinatesExplanationClick, theme }: RoleSelectionProps) => (
   <Container maxWidth={false} sx={{ 
     pt: 4,
     width: '100%',
@@ -37,7 +37,7 @@ export const RoleSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinat
           variant="contained"
           color="error"
           size="large"
-          onClick={() => onModeSelect('hawk')}
+          onClick={() => onRoleSelect('hawk')}
           sx={{
             width: '100%',
             background: `linear-gradient(45deg, ${theme.palette.error.main}, ${theme.palette.error.dark})`,
@@ -50,7 +50,7 @@ export const RoleSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinat
           variant="contained"
           color="info"
           size="large"
-          onClick={() => onModeSelect('bluebird')}
+          onClick={() => onRoleSelect('bluebird')}
           sx={{
             width: '100%',
             background: `linear-gradient(45deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
@@ -62,7 +62,7 @@ export const RoleSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinat
           variant="contained"
           color="warning"
           size="large"
-          onClick={() => onModeSelect('falcon')}
+          onClick={() => onRoleSelect('falcon')}
           sx={{
             width: '100%',
             background: `linear-gradient(45deg, ${theme.palette.warning.main}, ${theme.palette.warning.dark})`,
@@ -74,7 +74,7 @@ export const RoleSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinat
           variant="contained"
           color="success"
           size="large"
-          onClick={() => onModeSelect('starling')}
+          onClick={() => onRoleSelect('starling')}
           sx={{
             width: '100%',
             background: `linear-gradient(45deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`,

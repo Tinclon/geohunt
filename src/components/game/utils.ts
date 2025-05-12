@@ -1,4 +1,4 @@
-import type { GameMode } from './types';
+import type { GameRole } from './types';
 
 export type CoordinateSystem = 'decimal' | 'dms';
 
@@ -47,8 +47,8 @@ export const findChangedChars = (oldStr: string, newStr: string): number[] => {
   return changes;
 };
 
-export const getOpponentMode = (currentMode: GameMode): GameMode => {
-  switch (currentMode) {
+export const getOpponentRole = (currentRole: GameRole): GameRole => {
+  switch (currentRole) {
     case 'hawk':
       return 'bluebird';
     case 'bluebird':

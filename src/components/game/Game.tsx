@@ -9,9 +9,9 @@ import { LocationDisplay } from './LocationDisplay';
 import { DistanceDisplay } from './DistanceDisplay';
 import { RoleSelection } from './RoleSelection.tsx';
 import { BrickoutGame } from './BrickoutGame';
-import type { GameMode, Coordinates } from './types';
+import type { GameRole, Coordinates } from './types';
 import type { CoordinateSystem } from './utils';
-import { findChangedChars, getOpponentMode, decimalToDMS, formatDMS } from './utils';
+import { findChangedChars, getOpponentRole, decimalToDMS, formatDMS } from './utils';
 
 type Difficulty = 'Hard' | 'Medium' | 'Easy';
 
@@ -22,10 +22,10 @@ export const Game = () => {
   const opponentLatTimeoutRef = useRef<number | undefined>(undefined);
   const opponentLngTimeoutRef = useRef<number | undefined>(undefined);
   const distanceTimeoutRef = useRef<number | undefined>(undefined);
-  const [mode, setMode] = useState<GameMode | null>(() => {
-    const savedMode = localStorage.getItem('gameMode');
-    return (savedMode === 'hawk' || savedMode === 'bluebird' || savedMode === 'falcon' || savedMode === 'starling') 
-      ? savedMode as GameMode 
+  const [role, setRole] = useState<GameRole | null>(() => {
+    const savedRole = localStorage.getItem('gameRole');
+    return (savedRole === 'hawk' || savedRole === 'bluebird' || savedRole === 'falcon' || savedRole === 'starling')
+      ? savedRole as GameRole
       : null;
   });
   const [difficulty, setDifficulty] = useState<Difficulty>(() => {
@@ -67,16 +67,16 @@ export const Game = () => {
     return (saved === 'decimal' || saved === 'dms') ? saved as CoordinateSystem : 'decimal';
   });
 
-  const opponentMode = mode ? getOpponentMode(mode) : 'hawk';
+  const opponentRole = role ? getOpponentRole(role) : 'hawk';
 
-  const handleModeSelect = (selectedMode: GameMode) => {
-    setMode(selectedMode);
-    localStorage.setItem('gameMode', selectedMode);
+  const handleRoleSelect = (selectedRole: GameRole) => {
+    setRole(selectedRole);
+    localStorage.setItem('gameRole', selectedRole);
   };
 
   const handleBack = () => {
-    setMode(null);
-    localStorage.removeItem('gameMode');
+    setRole(null);
+    localStorage.removeItem('gameRole');
     setIsRunning(false);
     localStorage.removeItem('isRunning');
   };
@@ -106,7 +106,7 @@ export const Game = () => {
     localStorage.setItem('gameDifficulty', newDifficulty);
     
     if (updateServer && myCoordinates) {
-      await storeCoordinates(mode!, { ...myCoordinates, difficulty: newDifficulty });
+      await storeCoordinates(role!, { ...myCoordinates, difficulty: newDifficulty });
     }
   };
 
@@ -116,8 +116,8 @@ export const Game = () => {
     const nextIndex = (currentIndex + 1) % difficulties.length;
     const newDifficulty = difficulties[nextIndex];
     
-    // Only update server if we're in predator mode
-    const shouldUpdateServer = mode === 'hawk' || mode === 'falcon';
+    // Only update server if we're in predator role
+    const shouldUpdateServer = role === 'hawk' || role === 'falcon';
     await updateDifficulty(newDifficulty, shouldUpdateServer);
   };
 
@@ -188,9 +188,9 @@ export const Game = () => {
       setMyCoordinates(myPos);
       setFormattedMyCoordinates({ latitude: newLat, longitude: newLng });
       
-      if (mode && saveToServer) {
+      if (role && saveToServer) {
         const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
-        await storeCoordinates(mode, { ...myPos, difficulty: currentDifficulty });
+        await storeCoordinates(role, { ...myPos, difficulty: currentDifficulty });
       }
       setError(null);
     } catch (err) {
@@ -200,7 +200,7 @@ export const Game = () => {
 
   const updateOpponentLocation = async () => {
     try {
-      const opponentPos = await getOpponentCoordinates(opponentMode);
+      const opponentPos = await getOpponentCoordinates(opponentRole);
       if (opponentPos) {
         const newLat = formatCoordinate(opponentPos.latitude, true);
         const newLng = formatCoordinate(opponentPos.longitude, false);
@@ -230,8 +230,8 @@ export const Game = () => {
         setOpponentCoordinates(opponentPos);
         setFormattedOpponentCoordinates({ latitude: newLat, longitude: newLng });
 
-        // For prey modes, update difficulty to match opponent's difficulty
-        if ((mode === 'bluebird' || mode === 'starling') && 'difficulty' in opponentPos) {
+        // For prey roles, update difficulty to match opponent's difficulty
+        if ((role === 'bluebird' || role === 'starling') && 'difficulty' in opponentPos) {
           const opponentDifficulty = opponentPos.difficulty as Difficulty;
           await updateDifficulty(opponentDifficulty, false);
         }
@@ -247,7 +247,7 @@ export const Game = () => {
     : null;
 
   useEffect(() => {
-    if (mode) {
+    if (role) {
       // Initial updates
       updateMyLocation(true); // Save initial position
       updateOpponentLocation();
@@ -287,9 +287,9 @@ export const Game = () => {
           setFormattedMyCoordinates({ latitude: newLat, longitude: newLng });
           
           // Save to server
-          if (mode) {
+          if (role) {
             const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
-            storeCoordinates(mode, { ...position, difficulty: currentDifficulty });
+            storeCoordinates(role, { ...position, difficulty: currentDifficulty });
           }
         },
         () => {
@@ -301,7 +301,7 @@ export const Game = () => {
       const saveLocationInterval = setInterval(() => {
         if (myCoordinates) {
           const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
-          storeCoordinates(mode, { ...myCoordinates, difficulty: currentDifficulty });
+          storeCoordinates(role, { ...myCoordinates, difficulty: currentDifficulty });
         }
       }, 5 * 1000);
       const opponentInterval = setInterval(updateOpponentLocation, 5 * 1000);
@@ -315,7 +315,7 @@ export const Game = () => {
         clearInterval(opponentInterval);
       };
     }
-  }, [mode, coordinateSystem]);
+  }, [role, coordinateSystem]);
 
   useEffect(() => {
     if (distance !== null) {
@@ -368,8 +368,8 @@ export const Game = () => {
     return theme.palette.primary.main;
   };
 
-  const getModeColor = (mode: GameMode) => {
-    switch (mode) {
+  const getRoleColor = (role: GameRole) => {
+    switch (role) {
       case 'hawk':
         return theme.palette.error.main;
       case 'bluebird':
@@ -395,10 +395,10 @@ export const Game = () => {
     return <CoordinatesExplanation onBack={handleCoordinatesExplanationBack} />;
   }
 
-  if (!mode) {
+  if (!role) {
     return (
       <RoleSelection
-        onModeSelect={handleModeSelect}
+        onRoleSelect={handleRoleSelect}
         onGPSExplanationClick={handleGPSExplanationClick}
         onCoordinatesExplanationClick={handleCoordinatesExplanationClick}
         theme={theme}
@@ -518,11 +518,11 @@ export const Game = () => {
                 variant="h1" 
                 gutterBottom
                 sx={{
-                  color: getModeColor(mode),
+                  color: getRoleColor(role),
                   pr: 6,
                 }}
               >
-                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                {role.charAt(0).toUpperCase() + role.slice(1)}
               </Typography>
             </>
           )}
@@ -541,7 +541,7 @@ export const Game = () => {
               coordinates={formattedMyCoordinates}
               highlightLat={highlightMyLat}
               highlightLng={highlightMyLng}
-              color={getModeColor(mode)}
+              color={getRoleColor(role)}
               renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
               prevCoordinates={prevMyCoordinates ? {
                 latitude: formatCoordinate(prevMyCoordinates.latitude, true),
@@ -551,11 +551,11 @@ export const Game = () => {
             />
 
             <LocationDisplay
-              title={`${opponentMode.charAt(0).toUpperCase() + opponentMode.slice(1)}'s Location`}
+              title={`${opponentRole.charAt(0).toUpperCase() + opponentRole.slice(1)}'s Location`}
               coordinates={formattedOpponentCoordinates}
               highlightLat={highlightOpponentLat}
               highlightLng={highlightOpponentLng}
-              color={getModeColor(opponentMode)}
+              color={getRoleColor(opponentRole)}
               renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
               prevCoordinates={prevOpponentCoordinates ? {
                 latitude: formatCoordinate(prevOpponentCoordinates.latitude, true),
@@ -641,7 +641,7 @@ export const Game = () => {
           <Button
             variant="contained"
             onClick={handleDifficultyChange}
-            disabled={mode === 'bluebird' || mode === 'starling'}
+            disabled={role === 'bluebird' || role === 'starling'}
             sx={{ 
               minWidth: 90,
               color: 'black',
@@ -671,7 +671,7 @@ export const Game = () => {
             {difficulty}
           </Button>
 
-          {(mode === 'bluebird' || mode === 'starling') && (
+          {(role === 'bluebird' || role === 'starling') && (
             <Button
               variant="contained"
               onClick={handleRunningToggle}
