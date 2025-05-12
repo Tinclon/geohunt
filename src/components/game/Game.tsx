@@ -447,7 +447,7 @@ export const Game = () => {
                   {distance !== null ? (
                     <>
                       {renderHighlightedNumber(distance.toString(), highlightDistance)}
-                      &nbsp;meters
+                      &nbsp;{distance === 1 ? 'meter' : 'meters'}
                     </>
                   ) : (
                     'Unknown'
@@ -629,8 +629,7 @@ export const Game = () => {
               '&:hover': {
                 bgcolor: 'grey.600',
               },
-              color: 'grey.300',
-              fontWeight: 'bold'
+              color: 'grey.300'
             }}
           >
             {coordinateSystem === 'decimal' ? 'Decimal' : 'DMS'}
@@ -642,21 +641,27 @@ export const Game = () => {
             disabled={mode === 'bluebird' || mode === 'starling'}
             sx={{ 
               minWidth: 120,
-              color: 'white',
-              bgcolor: difficulty === 'Hard' ? 'error.main' : 
-                      difficulty === 'Medium' ? 'warning.main' : 
-                      'success.main',
+              color: 'black',
+              background: difficulty === 'Hard' ? 
+                `linear-gradient(45deg, ${theme.palette.error.main}, ${theme.palette.error.dark})` :
+                difficulty === 'Medium' ?
+                `linear-gradient(45deg, ${theme.palette.warning.main}, ${theme.palette.warning.dark})` :
+                `linear-gradient(45deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`,
               '&:hover': {
-                bgcolor: difficulty === 'Hard' ? 'error.dark' : 
-                        difficulty === 'Medium' ? 'warning.dark' : 
-                        'success.dark',
+                background: difficulty === 'Hard' ? 
+                  `linear-gradient(45deg, ${theme.palette.error.dark}, ${theme.palette.error.main})` :
+                  difficulty === 'Medium' ?
+                  `linear-gradient(45deg, ${theme.palette.warning.dark}, ${theme.palette.warning.main})` :
+                  `linear-gradient(45deg, ${theme.palette.success.dark}, ${theme.palette.success.main})`,
               },
               '&.Mui-disabled': {
-                bgcolor: difficulty === 'Hard' ? 'error.dark' : 
-                        difficulty === 'Medium' ? 'warning.dark' : 
-                        'success.dark',
+                background: difficulty === 'Hard' ? 
+                  `linear-gradient(45deg, ${theme.palette.error.dark}, ${theme.palette.error.main})` :
+                  difficulty === 'Medium' ?
+                  `linear-gradient(45deg, ${theme.palette.warning.dark}, ${theme.palette.warning.main})` :
+                  `linear-gradient(45deg, ${theme.palette.success.dark}, ${theme.palette.success.main})`,
                 opacity: 0.5,
-                color: 'white'
+                color: 'black'
               }
             }}
           >
@@ -669,12 +674,15 @@ export const Game = () => {
               onClick={handleRunningToggle}
               sx={{ 
                 minWidth: 120,
-                bgcolor: isRunning ? 'primary.main' : 'error.main',
+                color: 'black',
+                background: isRunning ? 
+                  `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})` :
+                  `linear-gradient(45deg, ${theme.palette.error.main}, ${theme.palette.error.dark})`,
                 '&:hover': {
-                  bgcolor: isRunning ? 'primary.dark' : 'error.dark',
-                },
-                color: 'white',
-                fontWeight: 'bold'
+                  background: isRunning ? 
+                    `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})` :
+                    `linear-gradient(45deg, ${theme.palette.error.dark}, ${theme.palette.error.main})`,
+                }
               }}
             >
               {isRunning ? "I'm hiding" : "I'm running"}

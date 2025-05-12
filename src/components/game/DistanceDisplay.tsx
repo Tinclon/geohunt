@@ -47,7 +47,7 @@ export const DistanceDisplay = ({
           {distance !== null ? (
             <>
               {renderHighlightedNumber(distance.toString(), highlightDistance)}
-              &nbsp;meters
+              &nbsp;{distance === 1 ? 'meter' : 'meters'}
               {direction && (
                 <Typography 
                   component="span" 

@@ -41,6 +41,7 @@ export const ModeSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinat
           sx={{
             width: '100%',
             background: `linear-gradient(45deg, ${theme.palette.error.main}, ${theme.palette.error.dark})`,
+            color: 'black'
           }}
         >
           Hawk
