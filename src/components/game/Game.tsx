@@ -81,6 +81,31 @@ export const Game = () => {
     return value.toFixed(6).replace(/\.?0+$/, '');
   };
 
+  const findChangedDigits = (prev: string, curr: string, shouldPad: boolean = false) => {
+    let prevValue = prev;
+    let currValue = curr;
+    
+    if (shouldPad) {
+      const [prevInt, prevDec] = prev.split('.');
+      const [currInt, currDec] = curr.split('.');
+      const prevPadded = prevInt.padStart(4, '\u00A0');
+      const currPadded = currInt.padStart(4, '\u00A0');
+      prevValue = prevDec ? `${prevPadded}.${prevDec}` : prevPadded;
+      currValue = currDec ? `${currPadded}.${currDec}` : currPadded;
+    }
+
+    const changes: number[] = [];
+    const maxLength = Math.max(prevValue.length, currValue.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (prevValue[i] !== currValue[i]) {
+        changes.push(i);
+      }
+    }
+    
+    return changes;
+  };
+
   const updateMyLocation = async (saveToServer: boolean = false) => {
     try {
       const myPos = await getCurrentPosition();
@@ -89,14 +114,14 @@ export const Game = () => {
 
       // Handle latitude changes
       if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-        const latChanges = findChangedDigits(prevMyLatRef.current, newLat);
+        const latChanges = findChangedDigits(prevMyLatRef.current, newLat, true);
         setHighlightMyLat(latChanges);
         setTimeout(() => setHighlightMyLat([]), 400);
       }
 
       // Handle longitude changes
       if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-        const lngChanges = findChangedDigits(prevMyLngRef.current, newLng);
+        const lngChanges = findChangedDigits(prevMyLngRef.current, newLng, true);
         setHighlightMyLng(lngChanges);
         setTimeout(() => setHighlightMyLng([]), 400);
       }
@@ -124,14 +149,14 @@ export const Game = () => {
 
         // Handle latitude changes
         if (prevOpponentLatRef.current && prevOpponentLatRef.current !== newLat) {
-          const latChanges = findChangedDigits(prevOpponentLatRef.current, newLat);
+          const latChanges = findChangedDigits(prevOpponentLatRef.current, newLat, true);
           setHighlightOpponentLat(latChanges);
           setTimeout(() => setHighlightOpponentLat([]), 400);
         }
 
         // Handle longitude changes
         if (prevOpponentLngRef.current && prevOpponentLngRef.current !== newLng) {
-          const lngChanges = findChangedDigits(prevOpponentLngRef.current, newLng);
+          const lngChanges = findChangedDigits(prevOpponentLngRef.current, newLng, true);
           setHighlightOpponentLng(lngChanges);
           setTimeout(() => setHighlightOpponentLng([]), 400);
         }
@@ -165,14 +190,14 @@ export const Game = () => {
 
           // Handle latitude changes
           if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-            const latChanges = findChangedDigits(prevMyLatRef.current, newLat);
+            const latChanges = findChangedDigits(prevMyLatRef.current, newLat, true);
             setHighlightMyLat(latChanges);
             setTimeout(() => setHighlightMyLat([]), 400);
           }
 
           // Handle longitude changes
           if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-            const lngChanges = findChangedDigits(prevMyLngRef.current, newLng);
+            const lngChanges = findChangedDigits(prevMyLngRef.current, newLng, true);
             setHighlightMyLng(lngChanges);
             setTimeout(() => setHighlightMyLng([]), 400);
           }
@@ -212,7 +237,7 @@ export const Game = () => {
       
       // Handle distance changes
       if (prevDistanceRef.current && prevDistanceRef.current !== newDistance) {
-        const distanceChanges = findChangedDigits(prevDistanceRef.current, newDistance);
+        const distanceChanges = findChangedDigits(prevDistanceRef.current, newDistance, false);
         setHighlightDistance(distanceChanges);
         setTimeout(() => setHighlightDistance([]), 400);
       }
@@ -256,6 +281,7 @@ export const Game = () => {
 
   const renderHighlightedNumber = (value: string, highlights: number[], shouldPad: boolean = false) => {
     let displayValue = value;
+    
     if (shouldPad) {
       const [intPart, decPart] = value.split('.');
       const paddedInt = intPart.padStart(4, '\u00A0'); // Using non-breaking space
