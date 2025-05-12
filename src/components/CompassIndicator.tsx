@@ -39,7 +39,7 @@ const calculateHeading = (alpha: number | null, beta: number | null, gamma: numb
   
   // Convert back to degrees and normalize
   heading = (heading * 180) / Math.PI;
-  heading = (heading + 360) % 360;
+  heading = (-heading + 360) % 360; // Negate the heading to fix the reversed direction
 
   return heading;
 };
