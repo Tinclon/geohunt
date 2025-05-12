@@ -365,6 +365,7 @@ export const Game = () => {
                   color: theme.palette.common.white,
                   textShadow: `0 0 10px ${getModeColor(mode)}`,
                   transform: 'scale(1.05)',
+                  transformOrigin: 'left',
                 }),
               }}
             >
@@ -378,6 +379,7 @@ export const Game = () => {
                   color: theme.palette.common.white,
                   textShadow: `0 0 10px ${getModeColor(mode)}`,
                   transform: 'scale(1.05)',
+                  transformOrigin: 'left',
                 }),
               }}
             >
@@ -399,6 +401,7 @@ export const Game = () => {
                   color: theme.palette.common.white,
                   textShadow: `0 0 10px ${getModeColor(opponentMode)}`,
                   transform: 'scale(1.05)',
+                  transformOrigin: 'left',
                 }),
               }}
             >
@@ -412,6 +415,7 @@ export const Game = () => {
                   color: theme.palette.common.white,
                   textShadow: `0 0 10px ${getModeColor(opponentMode)}`,
                   transform: 'scale(1.05)',
+                  transformOrigin: 'left',
                 }),
               }}
             >
@@ -443,6 +447,7 @@ export const Game = () => {
                 color: theme.palette.common.white,
                 textShadow: `0 0 10px ${theme.palette.common.white}`,
                 transform: 'scale(1.05)',
+                transformOrigin: 'left',
               }),
               ...(!distance && { color: theme.palette.grey[500] }),
             }}
