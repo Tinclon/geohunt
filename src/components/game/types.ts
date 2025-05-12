@@ -3,6 +3,7 @@ export type GameMode = 'hawk' | 'bluebird' | 'falcon' | 'starling';
 export interface Coordinates {
   latitude: number;
   longitude: number;
+  difficulty?: 'Hard' | 'Medium' | 'Easy';
 }
 
 export interface LocationDisplayProps {

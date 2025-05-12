@@ -1,11 +1,23 @@
 import type { GameMode } from './types';
 
-export const findChangedDigits = (oldStr: string, newStr: string): number[] => {
+export const findChangedDigits = (oldStr: string, newStr: string, shouldPad: boolean = false): number[] => {
   const changes: number[] = [];
   
+  let oldValue = oldStr;
+  let newValue = newStr;
+  
+  if (shouldPad) {
+    const [oldInt, oldDec] = oldStr.split('.');
+    const [newInt, newDec] = newStr.split('.');
+    const oldPadded = oldInt.padStart(4, '\u00A0');
+    const newPadded = newInt.padStart(4, '\u00A0');
+    oldValue = oldDec ? `${oldPadded}.${oldDec}` : oldPadded;
+    newValue = newDec ? `${newPadded}.${newDec}` : newPadded;
+  }
+  
   // Split the strings at the decimal point
-  const [oldWhole, oldDecimal = ''] = oldStr.split('.');
-  const [newWhole, newDecimal = ''] = newStr.split('.');
+  const [oldWhole, oldDecimal = ''] = oldValue.split('.');
+  const [newWhole, newDecimal = ''] = newValue.split('.');
   
   // Compare whole numbers from right to left
   const maxWholeLength = Math.max(oldWhole.length, newWhole.length);

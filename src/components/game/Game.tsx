@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Typography, Container, Paper, useTheme, IconButton, Button, ButtonGroup } from '@mui/material';
+import { Typography, Container, Paper, useTheme, IconButton, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates, watchPosition } from '../../services/locationService';
 import { GPSExplanation } from '../GPSExplanation';
@@ -100,31 +100,6 @@ export const Game = () => {
     return value.toFixed(6).replace(/\.?0+$/, '');
   };
 
-  const findChangedDigits = (prev: string, curr: string, shouldPad: boolean = false) => {
-    let prevValue = prev;
-    let currValue = curr;
-    
-    if (shouldPad) {
-      const [prevInt, prevDec] = prev.split('.');
-      const [currInt, currDec] = curr.split('.');
-      const prevPadded = prevInt.padStart(4, '\u00A0');
-      const currPadded = currInt.padStart(4, '\u00A0');
-      prevValue = prevDec ? `${prevPadded}.${prevDec}` : prevPadded;
-      currValue = currDec ? `${currPadded}.${currDec}` : currPadded;
-    }
-
-    const changes: number[] = [];
-    const maxLength = Math.max(prevValue.length, currValue.length);
-    
-    for (let i = 0; i < maxLength; i++) {
-      if (prevValue[i] !== currValue[i]) {
-        changes.push(i);
-      }
-    }
-    
-    return changes;
-  };
-
   const updateMyLocation = async (saveToServer: boolean = false) => {
     try {
       const myPos = await getCurrentPosition();
@@ -194,6 +169,13 @@ export const Game = () => {
         prevOpponentLatRef.current = newLat;
         prevOpponentLngRef.current = newLng;
         setOpponentCoordinates(opponentPos);
+
+        // For prey modes, update difficulty to match opponent's difficulty
+        if ((mode === 'bluebird' || mode === 'starling') && 'difficulty' in opponentPos) {
+          const opponentDifficulty = opponentPos.difficulty as Difficulty;
+          setDifficulty(opponentDifficulty);
+          localStorage.setItem('gameDifficulty', opponentDifficulty);
+        }
       }
       setError(null);
     } catch (err) {
