@@ -308,9 +308,19 @@ export const BrickoutGame = () => {
     const handleDeviceOrientation = (e: DeviceOrientationEvent) => {
       if (e.beta === null || e.gamma === null) return;
       
-      // Use gamma (left/right tilt) for paddle movement
-      // Normalize to -1 to 1 range
-      const tilt = Math.max(-1, Math.min(1, e.gamma / 45));
+      // Get device orientation (0, 90, -90, or 180)
+      const orientation = window.orientation || 0;
+      
+      let tilt: number;
+      if (Math.abs(orientation) === 90) {
+        // Landscape mode - use beta (front/back tilt)
+        // In landscape, beta is around 0 when flat, negative when tilted left, positive when tilted right
+        tilt = Math.max(-1, Math.min(1, -e.beta / 45));
+      } else {
+        // Portrait mode - use gamma (left/right tilt)
+        tilt = Math.max(-1, Math.min(1, e.gamma / 45));
+      }
+      
       inputRef.current.tilt = tilt;
     };
 
