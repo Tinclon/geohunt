@@ -3,15 +3,29 @@ import type { GameMode } from './types';
 export const findChangedDigits = (oldStr: string, newStr: string): number[] => {
   const changes: number[] = [];
   
-  // Ensure both strings are the same length by padding with zeros
-  const maxLength = Math.max(oldStr.length, newStr.length);
-  const paddedOld = oldStr.padEnd(maxLength, '0');
-  const paddedNew = newStr.padEnd(maxLength, '0');
+  // Split the strings at the decimal point
+  const [oldWhole, oldDecimal = ''] = oldStr.split('.');
+  const [newWhole, newDecimal = ''] = newStr.split('.');
   
-  // Compare each character and track changes
-  for (let i = 0; i < maxLength; i++) {
-    if (paddedOld[i] !== paddedNew[i]) {
+  // Compare whole numbers from right to left
+  const maxWholeLength = Math.max(oldWhole.length, newWhole.length);
+  const paddedOldWhole = oldWhole.padStart(maxWholeLength, '0');
+  const paddedNewWhole = newWhole.padStart(maxWholeLength, '0');
+  
+  for (let i = 0; i < maxWholeLength; i++) {
+    if (paddedOldWhole[i] !== paddedNewWhole[i]) {
       changes.push(i);
+    }
+  }
+  
+  // Compare decimal numbers from left to right
+  const maxDecimalLength = Math.max(oldDecimal.length, newDecimal.length);
+  const paddedOldDecimal = oldDecimal.padEnd(maxDecimalLength, '0');
+  const paddedNewDecimal = newDecimal.padEnd(maxDecimalLength, '0');
+  
+  for (let i = 0; i < maxDecimalLength; i++) {
+    if (paddedOldDecimal[i] !== paddedNewDecimal[i]) {
+      changes.push(maxWholeLength + 1 + i); // +1 for the decimal point
     }
   }
   

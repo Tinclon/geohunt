@@ -24,6 +24,11 @@ export const Game = () => {
       ? savedMode as GameMode 
       : null;
   });
+  const prevMyLatRef = useRef<string>('');
+  const prevMyLngRef = useRef<string>('');
+  const prevOpponentLatRef = useRef<string>('');
+  const prevOpponentLngRef = useRef<string>('');
+  const prevDistanceRef = useRef<string>('');
   const [showGPSExplanation, setShowGPSExplanation] = useState(() => {
     return localStorage.getItem('showGPSExplanation') === 'true';
   });
@@ -33,11 +38,6 @@ export const Game = () => {
   const [myCoordinates, setMyCoordinates] = useState<Coordinates | null>(null);
   const [opponentCoordinates, setOpponentCoordinates] = useState<Coordinates | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [prevMyLat, setPrevMyLat] = useState<string>('');
-  const [prevMyLng, setPrevMyLng] = useState<string>('');
-  const [prevOpponentLat, setPrevOpponentLat] = useState<string>('');
-  const [prevOpponentLng, setPrevOpponentLng] = useState<string>('');
-  const [prevDistance, setPrevDistance] = useState<string>('');
   const [highlightMyLat, setHighlightMyLat] = useState<number[]>([]);
   const [highlightMyLng, setHighlightMyLng] = useState<number[]>([]);
   const [highlightOpponentLat, setHighlightOpponentLat] = useState<number[]>([]);
@@ -86,23 +86,27 @@ export const Game = () => {
       const newLat = formatCoordinate(myPos.latitude);
       const newLng = formatCoordinate(myPos.longitude);
 
+      console.log('Current prevMyLat:', prevMyLatRef.current);
+      console.log('New lat:', newLat);
+
       // Handle latitude changes
-      if (prevMyLat && prevMyLat !== newLat) {
-        const latChanges = findChangedDigits(prevMyLat, newLat);
+      if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
+        const latChanges = findChangedDigits(prevMyLatRef.current, newLat);
         setHighlightMyLat(latChanges);
         setTimeout(() => setHighlightMyLat([]), 400);
       }
 
       // Handle longitude changes
-      if (prevMyLng && prevMyLng !== newLng) {
-        const lngChanges = findChangedDigits(prevMyLng, newLng);
+      if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
+        const lngChanges = findChangedDigits(prevMyLngRef.current, newLng);
         setHighlightMyLng(lngChanges);
         setTimeout(() => setHighlightMyLng([]), 400);
       }
 
       // Update previous values and coordinates
-      setPrevMyLat(newLat);
-      setPrevMyLng(newLng);
+      console.log('Setting prevMyLat to:', newLat);
+      prevMyLatRef.current = newLat;
+      prevMyLngRef.current = newLng;
       setMyCoordinates(myPos);
       
       if (mode && saveToServer) {
@@ -122,22 +126,22 @@ export const Game = () => {
         const newLng = formatCoordinate(opponentPos.longitude);
 
         // Handle latitude changes
-        if (prevOpponentLat && prevOpponentLat !== newLat) {
-          const latChanges = findChangedDigits(prevOpponentLat, newLat);
+        if (prevOpponentLatRef.current && prevOpponentLatRef.current !== newLat) {
+          const latChanges = findChangedDigits(prevOpponentLatRef.current, newLat);
           setHighlightOpponentLat(latChanges);
           setTimeout(() => setHighlightOpponentLat([]), 400);
         }
 
         // Handle longitude changes
-        if (prevOpponentLng && prevOpponentLng !== newLng) {
-          const lngChanges = findChangedDigits(prevOpponentLng, newLng);
+        if (prevOpponentLngRef.current && prevOpponentLngRef.current !== newLng) {
+          const lngChanges = findChangedDigits(prevOpponentLngRef.current, newLng);
           setHighlightOpponentLng(lngChanges);
           setTimeout(() => setHighlightOpponentLng([]), 400);
         }
 
         // Update previous values and coordinates
-        setPrevOpponentLat(newLat);
-        setPrevOpponentLng(newLng);
+        prevOpponentLatRef.current = newLat;
+        prevOpponentLngRef.current = newLng;
         setOpponentCoordinates(opponentPos);
       }
       setError(null);
@@ -175,13 +179,13 @@ export const Game = () => {
       const newDistance = Math.round(distance).toString();
       
       // Handle distance changes
-      if (prevDistance && prevDistance !== newDistance) {
-        const distanceChanges = findChangedDigits(prevDistance, newDistance);
+      if (prevDistanceRef.current && prevDistanceRef.current !== newDistance) {
+        const distanceChanges = findChangedDigits(prevDistanceRef.current, newDistance);
         setHighlightDistance(distanceChanges);
         setTimeout(() => setHighlightDistance([]), 400);
       }
       
-      setPrevDistance(newDistance);
+      prevDistanceRef.current = newDistance;
     }
   }, [distance]);
 
@@ -226,9 +230,7 @@ export const Game = () => {
           fontWeight: highlights.includes(index) ? 'bold' : 'normal',
           transition: 'all 0.4s ease',
           color: highlights.includes(index) ? theme.palette.primary.main : 'inherit',
-          backgroundColor: highlights.includes(index) ? theme.palette.primary.main + '20' : 'transparent',
           display: 'inline-block',
-          minWidth: char === '.' ? 'auto' : '1ch',
         }}
       >
         {char}
