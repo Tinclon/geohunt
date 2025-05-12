@@ -46,6 +46,8 @@ export const Game = () => {
   });
   const [myCoordinates, setMyCoordinates] = useState<Coordinates | null>(null);
   const [opponentCoordinates, setOpponentCoordinates] = useState<Coordinates | null>(null);
+  const [formattedMyCoordinates, setFormattedMyCoordinates] = useState<{ latitude: string; longitude: string; } | null>(null);
+  const [formattedOpponentCoordinates, setFormattedOpponentCoordinates] = useState<{ latitude: string; longitude: string; } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [highlightMyLat, setHighlightMyLat] = useState<number[]>([]);
   const [highlightMyLng, setHighlightMyLng] = useState<number[]>([]);
@@ -114,20 +116,15 @@ export const Game = () => {
 
   const formatCoordinate = (value: number, isLatitude: boolean) => {
     if (coordinateSystem === 'decimal') {
-      return value.toFixed(6).replace(/\.?0+$/, '');
+      const formatted = value.toFixed(6).replace(/\.?0+$/, '');
+      // Pad the integer part for consistent comparison
+      const [intPart, decPart] = formatted.split('.');
+      const paddedInt = intPart.padStart(4, '\u00A0'); // Using non-breaking space
+      return decPart ? `${paddedInt}.${decPart}` : paddedInt;
     } else {
       const dms = decimalToDMS(value, isLatitude);
       return formatDMS(dms);
     }
-  };
-
-  const formatForComparison = (value: string, shouldPad: boolean = false) => {
-    if (shouldPad) {
-      const [intPart, decPart] = value.split('.');
-      const paddedInt = intPart.padStart(4, '\u00A0'); // Using non-breaking space
-      return decPart ? `${paddedInt}.${decPart}` : paddedInt;
-    }
-    return value;
   };
 
   const renderHighlightedNumber = (value: string, highlights: number[]) => {
@@ -159,18 +156,14 @@ export const Game = () => {
 
       // Handle latitude changes
       if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-        const formattedPrev = formatForComparison(prevMyLatRef.current, true);
-        const formattedNew = formatForComparison(newLat, true);
-        const latChanges = findChangedChars(formattedPrev, formattedNew);
+        const latChanges = findChangedChars(prevMyLatRef.current, newLat);
         setHighlightMyLat(latChanges);
         setTimeout(() => setHighlightMyLat([]), 400);
       }
 
       // Handle longitude changes
       if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-        const formattedPrev = formatForComparison(prevMyLngRef.current, false);
-        const formattedNew = formatForComparison(newLng, false);
-        const lngChanges = findChangedChars(formattedPrev, formattedNew);
+        const lngChanges = findChangedChars(prevMyLngRef.current, newLng);
         setHighlightMyLng(lngChanges);
         setTimeout(() => setHighlightMyLng([]), 400);
       }
@@ -179,6 +172,7 @@ export const Game = () => {
       prevMyLatRef.current = newLat;
       prevMyLngRef.current = newLng;
       setMyCoordinates(myPos);
+      setFormattedMyCoordinates({ latitude: newLat, longitude: newLng });
       
       if (mode && saveToServer) {
         await storeCoordinates(mode, myPos, difficulty);
@@ -203,18 +197,14 @@ export const Game = () => {
 
         // Handle latitude changes
         if (prevOpponentLatRef.current && prevOpponentLatRef.current !== newLat) {
-          const formattedPrev = formatForComparison(prevOpponentLatRef.current, true);
-          const formattedNew = formatForComparison(newLat, true);
-          const latChanges = findChangedChars(formattedPrev, formattedNew);
+          const latChanges = findChangedChars(prevOpponentLatRef.current, newLat);
           setHighlightOpponentLat(latChanges);
           setTimeout(() => setHighlightOpponentLat([]), 400);
         }
 
         // Handle longitude changes
         if (prevOpponentLngRef.current && prevOpponentLngRef.current !== newLng) {
-          const formattedPrev = formatForComparison(prevOpponentLngRef.current, false);
-          const formattedNew = formatForComparison(newLng, false);
-          const lngChanges = findChangedChars(formattedPrev, formattedNew);
+          const lngChanges = findChangedChars(prevOpponentLngRef.current, newLng);
           setHighlightOpponentLng(lngChanges);
           setTimeout(() => setHighlightOpponentLng([]), 400);
         }
@@ -223,6 +213,7 @@ export const Game = () => {
         prevOpponentLatRef.current = newLat;
         prevOpponentLngRef.current = newLng;
         setOpponentCoordinates(opponentPos);
+        setFormattedOpponentCoordinates({ latitude: newLat, longitude: newLng });
 
         // For prey modes, update difficulty to match opponent's difficulty
         if ((mode === 'bluebird' || mode === 'starling') && 'difficulty' in opponentPos) {
@@ -255,36 +246,41 @@ export const Game = () => {
       // Set up watch position
       watchIdRef.current = watchPosition(
         (position) => {
-          const newLat = formatCoordinate(position.latitude, true);
-          const newLng = formatCoordinate(position.longitude, false);
-
           // Store current coordinates as previous before updating
           if (myCoordinates) {
             setPrevMyCoordinates({ ...myCoordinates });
           }
 
+          // Update raw coordinates first
+          setMyCoordinates(position);
+
+          // Format coordinates according to current system
+          const newLat = formatCoordinate(position.latitude, true);
+          const newLng = formatCoordinate(position.longitude, false);
+
           // Handle latitude changes
           if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-            const formattedPrev = formatForComparison(prevMyLatRef.current, true);
-            const formattedNew = formatForComparison(newLat, true);
-            const latChanges = findChangedChars(formattedPrev, formattedNew);
+            const latChanges = findChangedChars(prevMyLatRef.current, newLat);
             setHighlightMyLat(latChanges);
             setTimeout(() => setHighlightMyLat([]), 400);
           }
 
           // Handle longitude changes
           if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-            const formattedPrev = formatForComparison(prevMyLngRef.current, false);
-            const formattedNew = formatForComparison(newLng, false);
-            const lngChanges = findChangedChars(formattedPrev, formattedNew);
+            const lngChanges = findChangedChars(prevMyLngRef.current, newLng);
             setHighlightMyLng(lngChanges);
             setTimeout(() => setHighlightMyLng([]), 400);
           }
 
-          // Update previous values and coordinates
+          // Update previous values and formatted coordinates
           prevMyLatRef.current = newLat;
           prevMyLngRef.current = newLng;
-          setMyCoordinates(position);
+          setFormattedMyCoordinates({ latitude: newLat, longitude: newLng });
+          
+          // Save to server
+          if (mode) {
+            storeCoordinates(mode, position, difficulty);
+          }
         },
         () => {
           setError(null);
@@ -308,7 +304,7 @@ export const Game = () => {
         clearInterval(opponentInterval);
       };
     }
-  }, [mode]);
+  }, [mode, coordinateSystem]);
 
   useEffect(() => {
     if (distance !== null) {
@@ -316,9 +312,7 @@ export const Game = () => {
       
       // Handle distance changes
       if (prevDistanceRef.current && prevDistanceRef.current !== newDistance) {
-        const formattedPrev = formatForComparison(prevDistanceRef.current, false);
-        const formattedNew = formatForComparison(newDistance, false);
-        const distanceChanges = findChangedChars(formattedPrev, formattedNew);
+        const distanceChanges = findChangedChars(prevDistanceRef.current, newDistance);
         setHighlightDistance(distanceChanges);
         setTimeout(() => setHighlightDistance([]), 400);
       }
@@ -337,6 +331,22 @@ export const Game = () => {
       if (distanceTimeoutRef.current) clearTimeout(distanceTimeoutRef.current);
     };
   }, []);
+
+  // Update formatted coordinates when coordinate system changes
+  useEffect(() => {
+    if (myCoordinates) {
+      setFormattedMyCoordinates({
+        latitude: formatCoordinate(myCoordinates.latitude, true),
+        longitude: formatCoordinate(myCoordinates.longitude, false)
+      });
+    }
+    if (opponentCoordinates) {
+      setFormattedOpponentCoordinates({
+        latitude: formatCoordinate(opponentCoordinates.latitude, true),
+        longitude: formatCoordinate(opponentCoordinates.longitude, false)
+      });
+    }
+  }, [coordinateSystem]);
 
   const isClose = distance !== null && distance <= 50;
   const isNearby = distance !== null && distance <= 500 && distance > 50;
@@ -439,14 +449,11 @@ export const Game = () => {
 
         <LocationDisplay
           title="Your Location"
-          coordinates={myCoordinates ? {
-            latitude: formatCoordinate(myCoordinates.latitude, true),
-            longitude: formatCoordinate(myCoordinates.longitude, false)
-          } : null}
+          coordinates={formattedMyCoordinates}
           highlightLat={highlightMyLat}
           highlightLng={highlightMyLng}
           color={getModeColor(mode)}
-          renderHighlightedNumber={(value, isLatitude) => renderHighlightedNumber(formatForComparison(value, true), isLatitude ? highlightMyLat : highlightMyLng)}
+          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
           prevCoordinates={prevMyCoordinates ? {
             latitude: formatCoordinate(prevMyCoordinates.latitude, true),
             longitude: formatCoordinate(prevMyCoordinates.longitude, false)
@@ -456,14 +463,11 @@ export const Game = () => {
 
         <LocationDisplay
           title={`${opponentMode.charAt(0).toUpperCase() + opponentMode.slice(1)}'s Location`}
-          coordinates={opponentCoordinates ? {
-            latitude: formatCoordinate(opponentCoordinates.latitude, true),
-            longitude: formatCoordinate(opponentCoordinates.longitude, false)
-          } : null}
+          coordinates={formattedOpponentCoordinates}
           highlightLat={highlightOpponentLat}
           highlightLng={highlightOpponentLng}
           color={getModeColor(opponentMode)}
-          renderHighlightedNumber={(value, isLatitude) => renderHighlightedNumber(formatForComparison(value, true), isLatitude ? highlightOpponentLat : highlightOpponentLng)}
+          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
           prevCoordinates={prevOpponentCoordinates ? {
             latitude: formatCoordinate(prevOpponentCoordinates.latitude, true),
             longitude: formatCoordinate(prevOpponentCoordinates.longitude, false)
@@ -474,7 +478,7 @@ export const Game = () => {
         <DistanceDisplay
           distance={distance}
           highlightDistance={highlightDistance}
-          renderHighlightedNumber={(value) => renderHighlightedNumber(formatForComparison(value, false), highlightDistance)}
+          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
           theme={theme}
           myCoordinates={myCoordinates}
           opponentCoordinates={opponentCoordinates}
