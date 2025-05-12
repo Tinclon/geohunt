@@ -9,6 +9,7 @@ import { LocationDisplay } from './LocationDisplay';
 import { DistanceDisplay } from './DistanceDisplay';
 import { RoleSelection } from './RoleSelection.tsx';
 import { BrickoutGame } from './BrickoutGame';
+import { Viewer } from './Viewer';
 import type { GameRole, Coordinates } from './types';
 import type { CoordinateSystem } from './utils';
 import { findChangedChars, getOpponentRole, decimalToDMS, formatDMS } from './utils';
@@ -49,6 +50,7 @@ export const Game = () => {
   const [showCoordinatesExplanation, setShowCoordinatesExplanation] = useState(() => {
     return localStorage.getItem('showCoordinatesExplanation') === 'true';
   });
+  const [showViewer, setShowViewer] = useState(false);
   const [myCoordinates, setMyCoordinates] = useState<Coordinates | null>(null);
   const [opponentCoordinates, setOpponentCoordinates] = useState<Coordinates | null>(null);
   const [formattedMyCoordinates, setFormattedMyCoordinates] = useState<{ latitude: string; longitude: string; } | null>(null);
@@ -99,6 +101,14 @@ export const Game = () => {
   const handleCoordinatesExplanationClick = () => {
     setShowCoordinatesExplanation(true);
     localStorage.setItem('showCoordinatesExplanation', 'true');
+  };
+
+  const handleViewerClick = () => {
+    setShowViewer(true);
+  };
+
+  const handleViewerBack = () => {
+    setShowViewer(false);
   };
 
   const updateDifficulty = async (newDifficulty: Difficulty, updateServer: boolean = true) => {
@@ -395,12 +405,17 @@ export const Game = () => {
     return <CoordinatesExplanation onBack={handleCoordinatesExplanationBack} />;
   }
 
+  if (showViewer) {
+    return <Viewer onBack={handleViewerBack} />;
+  }
+
   if (!role) {
     return (
       <RoleSelection
         onRoleSelect={handleRoleSelect}
         onGPSExplanationClick={handleGPSExplanationClick}
         onCoordinatesExplanationClick={handleCoordinatesExplanationClick}
+        onViewerClick={handleViewerClick}
         theme={theme}
       />
     );

@@ -31,5 +31,6 @@ export interface RoleSelectionProps {
   onRoleSelect: (role: GameRole) => void;
   onGPSExplanationClick: () => void;
   onCoordinatesExplanationClick: () => void;
+  onViewerClick: () => void;
   theme: any;
 } 
