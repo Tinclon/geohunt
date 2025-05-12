@@ -441,6 +441,9 @@ export const Game = () => {
           highlightDistance={highlightDistance}
           renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, false)}
           theme={theme}
+          myCoordinates={myCoordinates}
+          opponentCoordinates={opponentCoordinates}
+          difficulty={difficulty}
         />
 
         {isClose && (

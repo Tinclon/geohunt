@@ -21,6 +21,9 @@ export interface DistanceDisplayProps {
   highlightDistance: number[];
   renderHighlightedNumber: (value: string, highlights: number[]) => React.ReactNode[];
   theme: any;
+  myCoordinates: Coordinates | null;
+  opponentCoordinates: Coordinates | null;
+  difficulty: 'Hard' | 'Medium' | 'Easy';
 }
 
 export interface ModeSelectionProps {
