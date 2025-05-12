@@ -82,14 +82,14 @@ export const Game = () => {
       const newLat = myPos.latitude.toFixed(6);
       const newLng = myPos.longitude.toFixed(6);
 
-      // Check for changes and set highlights
-      if (prevMyLat !== newLat) {
+      // Only highlight if we have previous values and they're different
+      if (prevMyLat && prevMyLat !== newLat) {
         const latChanges = findChangedDigits(prevMyLat, newLat);
         setHighlightMyLat(latChanges);
         setTimeout(() => setHighlightMyLat([]), 400);
       }
 
-      if (prevMyLng !== newLng) {
+      if (prevMyLng && prevMyLng !== newLng) {
         const lngChanges = findChangedDigits(prevMyLng, newLng);
         setHighlightMyLng(lngChanges);
         setTimeout(() => setHighlightMyLng([]), 400);
@@ -116,14 +116,14 @@ export const Game = () => {
         const newLat = opponentPos.latitude.toFixed(6);
         const newLng = opponentPos.longitude.toFixed(6);
 
-        // Check for changes and set highlights
-        if (prevOpponentLat !== newLat) {
+        // Only highlight if we have previous values and they're different
+        if (prevOpponentLat && prevOpponentLat !== newLat) {
           const latChanges = findChangedDigits(prevOpponentLat, newLat);
           setHighlightOpponentLat(latChanges);
           setTimeout(() => setHighlightOpponentLat([]), 400);
         }
 
-        if (prevOpponentLng !== newLng) {
+        if (prevOpponentLng && prevOpponentLng !== newLng) {
           const lngChanges = findChangedDigits(prevOpponentLng, newLng);
           setHighlightOpponentLng(lngChanges);
           setTimeout(() => setHighlightOpponentLng([]), 400);
@@ -168,7 +168,8 @@ export const Game = () => {
     if (distance !== null) {
       const newDistance = Math.round(distance).toString();
       
-      if (prevDistance !== newDistance) {
+      // Only highlight if we have a previous value and it's different
+      if (prevDistance && prevDistance !== newDistance) {
         const distanceChanges = findChangedDigits(prevDistance, newDistance);
         setHighlightDistance(distanceChanges);
         setTimeout(() => setHighlightDistance([]), 400);

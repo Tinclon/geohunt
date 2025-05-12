@@ -1,6 +1,6 @@
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { theme } from './theme';
-import { Game } from './components/Game';
+import { Game } from './components/game/Game';
 
 function App() {
   return (
