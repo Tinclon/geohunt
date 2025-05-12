@@ -33,6 +33,10 @@ export const Game = () => {
       ? savedDifficulty as Difficulty
       : 'Hard';
   });
+  const [isRunning, setIsRunning] = useState<boolean>(() => {
+    const savedState = localStorage.getItem('isRunning');
+    return savedState === 'true';
+  });
   const prevMyLatRef = useRef<string>('');
   const prevMyLngRef = useRef<string>('');
   const prevOpponentLatRef = useRef<string>('');
@@ -373,6 +377,12 @@ export const Game = () => {
     }
   };
 
+  const handleRunningToggle = () => {
+    const newState = !isRunning;
+    setIsRunning(newState);
+    localStorage.setItem('isRunning', newState.toString());
+  };
+
   if (showGPSExplanation) {
     return <GPSExplanation onBack={handleGPSExplanationBack} />;
   }
@@ -568,6 +578,24 @@ export const Game = () => {
           >
             {difficulty}
           </Button>
+
+          {(mode === 'bluebird' || mode === 'starling') && (
+            <Button
+              variant="contained"
+              onClick={handleRunningToggle}
+              sx={{ 
+                minWidth: 120,
+                bgcolor: isRunning ? 'warning.main' : 'error.main',
+                '&:hover': {
+                  bgcolor: isRunning ? 'warning.dark' : 'error.dark',
+                },
+                color: 'white',
+                fontWeight: 'bold'
+              }}
+            >
+              {isRunning ? "I'm hiding" : "I'm running"}
+            </Button>
+          )}
         </Box>
       </Paper>
     </Container>
