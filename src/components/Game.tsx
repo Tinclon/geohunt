@@ -431,37 +431,25 @@ export const Game = () => {
           </Box>
         )}
 
-        {distance !== null && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h2" gutterBottom sx={{ color: theme.palette.common.white }}>
-              Distance
-            </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                transition: 'all 0.3s ease',
-                ...(flashDistance && {
-                  color: theme.palette.common.white,
-                  textShadow: `0 0 10px ${theme.palette.common.white}`,
-                  transform: 'scale(1.05)',
-                }),
-              }}
-            >
-              {Math.round(distance)} meters
-            </Typography>
-          </Box>
-        )}
-
-        {!distance && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h2" gutterBottom sx={{ color: theme.palette.common.white }}>
-              Distance
-            </Typography>
-            <Typography variant="body1" sx={{ color: theme.palette.grey[500] }}>
-              Unknown
-            </Typography>
-          </Box>
-        )}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h2" gutterBottom sx={{ color: theme.palette.common.white }}>
+            Distance
+          </Typography>
+          <Typography 
+            variant="body1"
+            sx={{
+              transition: 'all 0.3s ease',
+              ...(flashDistance && {
+                color: theme.palette.common.white,
+                textShadow: `0 0 10px ${theme.palette.common.white}`,
+                transform: 'scale(1.05)',
+              }),
+              ...(!distance && { color: theme.palette.grey[500] }),
+            }}
+          >
+            {distance !== null ? `${Math.round(distance)} meters` : 'Unknown'}
+          </Typography>
+        </Box>
 
         {isClose && (
           <Typography
