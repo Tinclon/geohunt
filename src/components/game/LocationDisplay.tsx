@@ -1,6 +1,5 @@
 import { Box, Typography } from '@mui/material';
 import type { LocationDisplayProps } from './types';
-import { decimalToDMS, formatDMS } from './utils';
 
 export const LocationDisplay = ({ 
   title, 
@@ -10,8 +9,7 @@ export const LocationDisplay = ({
   color, 
   renderHighlightedNumber,
   prevCoordinates,
-  difficulty,
-  coordinateSystem
+  difficulty
 }: LocationDisplayProps) => {
   if (!coordinates) {
     return (
@@ -25,15 +23,6 @@ export const LocationDisplay = ({
       </Box>
     );
   }
-
-  const formatCoordinate = (value: number, isLatitude: boolean) => {
-    if (coordinateSystem === 'decimal') {
-      return value.toFixed(6);
-    } else {
-      const dms = decimalToDMS(value, isLatitude);
-      return formatDMS(dms);
-    }
-  };
 
   const monospaceFont = '"Roboto Mono", "SF Mono", "Consolas", "Liberation Mono", "Menlo", "Courier", monospace';
 
@@ -62,7 +51,7 @@ export const LocationDisplay = ({
           minWidth: '120px',
           textAlign: 'right'
         }}>
-          {renderHighlightedNumber(formatCoordinate(coordinates.latitude, true), highlightLat)}
+          {renderHighlightedNumber(coordinates.latitude, highlightLat)}
         </Typography>
         {latDirection && (
           <Typography 
@@ -92,7 +81,7 @@ export const LocationDisplay = ({
           minWidth: '120px',
           textAlign: 'right'
         }}>
-          {renderHighlightedNumber(formatCoordinate(coordinates.longitude, false), highlightLng)}
+          {renderHighlightedNumber(coordinates.longitude, highlightLng)}
         </Typography>
         {lngDirection && (
           <Typography 

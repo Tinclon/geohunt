@@ -8,14 +8,13 @@ export interface Coordinates {
 
 export interface LocationDisplayProps {
   title: string;
-  coordinates: Coordinates | null;
+  coordinates: { latitude: string; longitude: string; } | null;
   highlightLat: number[];
   highlightLng: number[];
   color: string;
   renderHighlightedNumber: (value: string, highlights: number[]) => React.ReactNode[];
-  prevCoordinates: Coordinates | null;
+  prevCoordinates: { latitude: string; longitude: string; } | null;
   difficulty: 'Hard' | 'Medium' | 'Easy';
-  coordinateSystem: 'decimal' | 'dms';
 }
 
 export interface DistanceDisplayProps {

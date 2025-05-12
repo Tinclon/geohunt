@@ -10,7 +10,7 @@ import { DistanceDisplay } from './DistanceDisplay';
 import { ModeSelection } from './ModeSelection';
 import type { GameMode, Coordinates } from './types';
 import type { CoordinateSystem } from './utils';
-import { findChangedDigitsDecimal, findChangedDMS, getOpponentMode, decimalToDMS, formatDMS } from './utils';
+import { findChangedChars, getOpponentMode, decimalToDMS, formatDMS } from './utils';
 
 type Difficulty = 'Hard' | 'Medium' | 'Easy';
 
@@ -121,6 +121,31 @@ export const Game = () => {
     }
   };
 
+  const formatForComparison = (value: string, shouldPad: boolean = false) => {
+    if (shouldPad) {
+      const [intPart, decPart] = value.split('.');
+      const paddedInt = intPart.padStart(4, '\u00A0'); // Using non-breaking space
+      return decPart ? `${paddedInt}.${decPart}` : paddedInt;
+    }
+    return value;
+  };
+
+  const renderHighlightedNumber = (value: string, highlights: number[]) => {
+    return value.split('').map((char, index) => (
+      <span
+        key={index}
+        style={{
+          fontWeight: highlights.includes(index) ? 'bold' : 'normal',
+          transition: 'all 0.4s ease',
+          color: highlights.includes(index) ? theme.palette.primary.main : 'inherit',
+          display: 'inline-block',
+        }}
+      >
+        {char}
+      </span>
+    ));
+  };
+
   const updateMyLocation = async (saveToServer: boolean = false) => {
     try {
       const myPos = await getCurrentPosition();
@@ -134,18 +159,18 @@ export const Game = () => {
 
       // Handle latitude changes
       if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-        const latChanges = coordinateSystem === 'decimal' 
-          ? findChangedDigitsDecimal(prevMyLatRef.current, newLat, true)
-          : findChangedDMS(prevMyLatRef.current, newLat);
+        const formattedPrev = formatForComparison(prevMyLatRef.current, true);
+        const formattedNew = formatForComparison(newLat, true);
+        const latChanges = findChangedChars(formattedPrev, formattedNew);
         setHighlightMyLat(latChanges);
         setTimeout(() => setHighlightMyLat([]), 400);
       }
 
       // Handle longitude changes
       if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-        const lngChanges = coordinateSystem === 'decimal'
-          ? findChangedDigitsDecimal(prevMyLngRef.current, newLng, true)
-          : findChangedDMS(prevMyLngRef.current, newLng);
+        const formattedPrev = formatForComparison(prevMyLngRef.current, false);
+        const formattedNew = formatForComparison(newLng, false);
+        const lngChanges = findChangedChars(formattedPrev, formattedNew);
         setHighlightMyLng(lngChanges);
         setTimeout(() => setHighlightMyLng([]), 400);
       }
@@ -178,18 +203,18 @@ export const Game = () => {
 
         // Handle latitude changes
         if (prevOpponentLatRef.current && prevOpponentLatRef.current !== newLat) {
-          const latChanges = coordinateSystem === 'decimal'
-            ? findChangedDigitsDecimal(prevOpponentLatRef.current, newLat, true)
-            : findChangedDMS(prevOpponentLatRef.current, newLat);
+          const formattedPrev = formatForComparison(prevOpponentLatRef.current, true);
+          const formattedNew = formatForComparison(newLat, true);
+          const latChanges = findChangedChars(formattedPrev, formattedNew);
           setHighlightOpponentLat(latChanges);
           setTimeout(() => setHighlightOpponentLat([]), 400);
         }
 
         // Handle longitude changes
         if (prevOpponentLngRef.current && prevOpponentLngRef.current !== newLng) {
-          const lngChanges = coordinateSystem === 'decimal'
-            ? findChangedDigitsDecimal(prevOpponentLngRef.current, newLng, true)
-            : findChangedDMS(prevOpponentLngRef.current, newLng);
+          const formattedPrev = formatForComparison(prevOpponentLngRef.current, false);
+          const formattedNew = formatForComparison(newLng, false);
+          const lngChanges = findChangedChars(formattedPrev, formattedNew);
           setHighlightOpponentLng(lngChanges);
           setTimeout(() => setHighlightOpponentLng([]), 400);
         }
@@ -240,18 +265,18 @@ export const Game = () => {
 
           // Handle latitude changes
           if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-            const latChanges = coordinateSystem === 'decimal' 
-              ? findChangedDigitsDecimal(prevMyLatRef.current, newLat, true)
-              : findChangedDMS(prevMyLatRef.current, newLat);
+            const formattedPrev = formatForComparison(prevMyLatRef.current, true);
+            const formattedNew = formatForComparison(newLat, true);
+            const latChanges = findChangedChars(formattedPrev, formattedNew);
             setHighlightMyLat(latChanges);
             setTimeout(() => setHighlightMyLat([]), 400);
           }
 
           // Handle longitude changes
           if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-            const lngChanges = coordinateSystem === 'decimal'
-              ? findChangedDigitsDecimal(prevMyLngRef.current, newLng, true)
-              : findChangedDMS(prevMyLngRef.current, newLng);
+            const formattedPrev = formatForComparison(prevMyLngRef.current, false);
+            const formattedNew = formatForComparison(newLng, false);
+            const lngChanges = findChangedChars(formattedPrev, formattedNew);
             setHighlightMyLng(lngChanges);
             setTimeout(() => setHighlightMyLng([]), 400);
           }
@@ -291,7 +316,9 @@ export const Game = () => {
       
       // Handle distance changes
       if (prevDistanceRef.current && prevDistanceRef.current !== newDistance) {
-        const distanceChanges = findChangedDigitsDecimal(prevDistanceRef.current, newDistance, false);
+        const formattedPrev = formatForComparison(prevDistanceRef.current, false);
+        const formattedNew = formatForComparison(newDistance, false);
+        const distanceChanges = findChangedChars(formattedPrev, formattedNew);
         setHighlightDistance(distanceChanges);
         setTimeout(() => setHighlightDistance([]), 400);
       }
@@ -331,30 +358,6 @@ export const Game = () => {
       case 'starling':
         return theme.palette.success.main;
     }
-  };
-
-  const renderHighlightedNumber = (value: string, highlights: number[], shouldPad: boolean = false) => {
-    let displayValue = value;
-    
-    if (shouldPad) {
-      const [intPart, decPart] = value.split('.');
-      const paddedInt = intPart.padStart(4, '\u00A0'); // Using non-breaking space
-      displayValue = decPart ? `${paddedInt}.${decPart}` : paddedInt;
-    }
-    
-    return displayValue.split('').map((char, index) => (
-      <span
-        key={index}
-        style={{
-          fontWeight: highlights.includes(index) ? 'bold' : 'normal',
-          transition: 'all 0.4s ease',
-          color: highlights.includes(index) ? theme.palette.primary.main : 'inherit',
-          display: 'inline-block',
-        }}
-      >
-        {char}
-      </span>
-    ));
   };
 
   if (showGPSExplanation) {
@@ -436,32 +439,42 @@ export const Game = () => {
 
         <LocationDisplay
           title="Your Location"
-          coordinates={myCoordinates}
+          coordinates={myCoordinates ? {
+            latitude: formatCoordinate(myCoordinates.latitude, true),
+            longitude: formatCoordinate(myCoordinates.longitude, false)
+          } : null}
           highlightLat={highlightMyLat}
           highlightLng={highlightMyLng}
           color={getModeColor(mode)}
-          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, true)}
-          prevCoordinates={prevMyCoordinates}
+          renderHighlightedNumber={(value, isLatitude) => renderHighlightedNumber(formatForComparison(value, true), isLatitude ? highlightMyLat : highlightMyLng)}
+          prevCoordinates={prevMyCoordinates ? {
+            latitude: formatCoordinate(prevMyCoordinates.latitude, true),
+            longitude: formatCoordinate(prevMyCoordinates.longitude, false)
+          } : null}
           difficulty={difficulty}
-          coordinateSystem={coordinateSystem}
         />
 
         <LocationDisplay
           title={`${opponentMode.charAt(0).toUpperCase() + opponentMode.slice(1)}'s Location`}
-          coordinates={opponentCoordinates}
+          coordinates={opponentCoordinates ? {
+            latitude: formatCoordinate(opponentCoordinates.latitude, true),
+            longitude: formatCoordinate(opponentCoordinates.longitude, false)
+          } : null}
           highlightLat={highlightOpponentLat}
           highlightLng={highlightOpponentLng}
           color={getModeColor(opponentMode)}
-          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, true)}
-          prevCoordinates={prevOpponentCoordinates}
+          renderHighlightedNumber={(value, isLatitude) => renderHighlightedNumber(formatForComparison(value, true), isLatitude ? highlightOpponentLat : highlightOpponentLng)}
+          prevCoordinates={prevOpponentCoordinates ? {
+            latitude: formatCoordinate(prevOpponentCoordinates.latitude, true),
+            longitude: formatCoordinate(prevOpponentCoordinates.longitude, false)
+          } : null}
           difficulty={difficulty}
-          coordinateSystem={coordinateSystem}
         />
 
         <DistanceDisplay
           distance={distance}
           highlightDistance={highlightDistance}
-          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, false)}
+          renderHighlightedNumber={(value) => renderHighlightedNumber(formatForComparison(value, false), highlightDistance)}
           theme={theme}
           myCoordinates={myCoordinates}
           opponentCoordinates={opponentCoordinates}
@@ -548,4 +561,4 @@ export const Game = () => {
       </Paper>
     </Container>
   );
-}; 
+};
