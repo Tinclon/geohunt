@@ -123,8 +123,8 @@ export const Game = () => {
     ? calculateDistance(myCoordinates, opponentCoordinates)
     : null;
 
-  const isClose = distance !== null && distance <= 200;
-  const isNearby = distance !== null && distance <= 500 && distance > 200;
+  const isClose = distance !== null && distance <= 50;
+  const isNearby = distance !== null && distance <= 500 && distance > 50;
 
   const getShadowColor = () => {
     if (isClose) return theme.palette.error.main;
@@ -396,7 +396,7 @@ export const Game = () => {
             sx={{
               color: theme.palette.error.main,
               animation: 'flash 1s infinite',
-              fontSize: '1.5rem',
+              fontSize: '1.2rem',
               '@keyframes flash': {
                 '0%': { 
                   opacity: 1,
