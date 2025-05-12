@@ -4,7 +4,7 @@ interface Coordinates {
 }
 
 const SERVER_URL = import.meta.env.PROD 
-  ? 'https://geohunt-server.onrender.com'  // Production server URL
+  ? 'https://geohunt.onrender.com'  // Production server URL
   : 'http://localhost:3000';               // Development server URL
 
 // Helper function to make API calls
