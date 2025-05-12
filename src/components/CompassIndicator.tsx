@@ -54,10 +54,21 @@ export const CompassIndicator = () => {
     let intervalId: number;
 
     const handleOrientation = (event: DeviceOrientationEvent) => {
-      const heading = calculateHeading(event.alpha, event.beta, event.gamma);
-      setDegrees(heading);
-      setDirection(getDirectionSymbol(heading));
-      setError(null);
+      // Use webkitCompassHeading if available (iOS devices)
+      if ('webkitCompassHeading' in event) {
+        const heading = (event as any).webkitCompassHeading;
+        setDegrees(heading);
+        setDirection(getDirectionSymbol(heading));
+        setError(null);
+      } else {
+        // Fallback to device orientation for non-iOS devices
+        const alpha = event.alpha;
+        if (alpha !== null) {
+          setDegrees(alpha);
+          setDirection(getDirectionSymbol(alpha));
+          setError(null);
+        }
+      }
     };
 
     const checkPermission = async () => {

@@ -7,7 +7,7 @@ import { CoordinatesExplanation } from '../CoordinatesExplanation';
 import { CompassIndicator } from '../CompassIndicator';
 import { LocationDisplay } from './LocationDisplay';
 import { DistanceDisplay } from './DistanceDisplay';
-import { ModeSelection } from './ModeSelection';
+import { RoleSelection } from './RoleSelection.tsx';
 import { BrickoutGame } from './BrickoutGame';
 import type { GameMode, Coordinates } from './types';
 import type { CoordinateSystem } from './utils';
@@ -397,7 +397,7 @@ export const Game = () => {
 
   if (!mode) {
     return (
-      <ModeSelection
+      <RoleSelection
         onModeSelect={handleModeSelect}
         onGPSExplanationClick={handleGPSExplanationClick}
         onCoordinatesExplanationClick={handleCoordinatesExplanationClick}

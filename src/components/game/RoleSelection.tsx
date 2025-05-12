@@ -1,7 +1,7 @@
 import { Box, Typography, Button, Container, Paper } from '@mui/material';
 import type { ModeSelectionProps } from './types';
 
-export const ModeSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinatesExplanationClick, theme }: ModeSelectionProps) => (
+export const RoleSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinatesExplanationClick, theme }: ModeSelectionProps) => (
   <Container maxWidth={false} sx={{ 
     pt: 4,
     width: '100%',
@@ -25,7 +25,7 @@ export const ModeSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinat
       }}
     >
       <Typography variant="h1" gutterBottom>
-        Choose Your Mode
+        Select Your Role
       </Typography>
       <Box sx={{ 
         display: 'grid', 
