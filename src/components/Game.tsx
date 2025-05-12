@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, Container, Paper, useTheme, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates } from '../services/locationService';
@@ -15,6 +15,11 @@ interface Coordinates {
 
 export const Game = () => {
   const theme = useTheme();
+  const myLatTimeoutRef = useRef<number | undefined>(undefined);
+  const myLngTimeoutRef = useRef<number | undefined>(undefined);
+  const opponentLatTimeoutRef = useRef<number | undefined>(undefined);
+  const opponentLngTimeoutRef = useRef<number | undefined>(undefined);
+  const distanceTimeoutRef = useRef<number | undefined>(undefined);
   const [mode, setMode] = useState<GameMode | null>(() => {
     const savedMode = localStorage.getItem('gameMode');
     return (savedMode === 'hawk' || savedMode === 'bluebird' || savedMode === 'falcon' || savedMode === 'starling') 
@@ -88,12 +93,31 @@ export const Game = () => {
 
   const findChangedDigits = (oldStr: string, newStr: string): number[] => {
     const changes: number[] = [];
-    const maxLength = Math.max(oldStr.length, newStr.length);
-    for (let i = 0; i < maxLength; i++) {
-      if (oldStr[i] !== newStr[i]) {
-        changes.push(i);
+    let i = 0;
+    let j = 0;
+    
+    // Find the first difference
+    while (i < oldStr.length && j < newStr.length && oldStr[i] === newStr[j]) {
+      i++;
+      j++;
+    }
+    
+    // If we found a difference, mark all characters from this point until the next matching character
+    if (i < oldStr.length || j < newStr.length) {
+      const startDiff = i;
+      
+      // Find where the strings match again
+      while (i < oldStr.length && j < newStr.length && oldStr[i] !== newStr[j]) {
+        i++;
+        j++;
+      }
+      
+      // Add all positions that changed
+      for (let k = startDiff; k < i; k++) {
+        changes.push(k);
       }
     }
+    
     return changes;
   };
 
@@ -103,24 +127,40 @@ export const Game = () => {
       const newLat = myPos.latitude.toFixed(6);
       const newLng = myPos.longitude.toFixed(6);
 
+      // First, check for changes and set highlights
       if (prevMyLat) {
         const latChanges = findChangedDigits(prevMyLat, newLat);
         if (latChanges.length > 0) {
           setHighlightMyLat(latChanges);
-          setTimeout(() => setHighlightMyLat([]), 500);
+          // Clear any existing timeouts
+          if (myLatTimeoutRef.current) {
+            clearTimeout(myLatTimeoutRef.current);
+          }
+          myLatTimeoutRef.current = setTimeout(() => {
+            setHighlightMyLat([]);
+          }, 250);
         }
       }
+
       if (prevMyLng) {
         const lngChanges = findChangedDigits(prevMyLng, newLng);
         if (lngChanges.length > 0) {
           setHighlightMyLng(lngChanges);
-          setTimeout(() => setHighlightMyLng([]), 500);
+          // Clear any existing timeouts
+          if (myLngTimeoutRef.current) {
+            clearTimeout(myLngTimeoutRef.current);
+          }
+          myLngTimeoutRef.current = setTimeout(() => {
+            setHighlightMyLng([]);
+          }, 250);
         }
       }
 
+      // Then update the coordinates and previous values
       setPrevMyLat(newLat);
       setPrevMyLng(newLng);
       setMyCoordinates(myPos);
+      
       if (mode && saveToServer) {
         await storeCoordinates(mode, myPos);
       }
@@ -137,21 +177,36 @@ export const Game = () => {
         const newLat = opponentPos.latitude.toFixed(6);
         const newLng = opponentPos.longitude.toFixed(6);
 
+        // First, check for changes and set highlights
         if (prevOpponentLat) {
           const latChanges = findChangedDigits(prevOpponentLat, newLat);
           if (latChanges.length > 0) {
             setHighlightOpponentLat(latChanges);
-            setTimeout(() => setHighlightOpponentLat([]), 500);
+            // Clear any existing timeouts
+            if (opponentLatTimeoutRef.current) {
+              clearTimeout(opponentLatTimeoutRef.current);
+            }
+            opponentLatTimeoutRef.current = setTimeout(() => {
+              setHighlightOpponentLat([]);
+            }, 250);
           }
         }
+
         if (prevOpponentLng) {
           const lngChanges = findChangedDigits(prevOpponentLng, newLng);
           if (lngChanges.length > 0) {
             setHighlightOpponentLng(lngChanges);
-            setTimeout(() => setHighlightOpponentLng([]), 500);
+            // Clear any existing timeouts
+            if (opponentLngTimeoutRef.current) {
+              clearTimeout(opponentLngTimeoutRef.current);
+            }
+            opponentLngTimeoutRef.current = setTimeout(() => {
+              setHighlightOpponentLng([]);
+            }, 250);
           }
         }
 
+        // Then update the coordinates and previous values
         setPrevOpponentLat(newLat);
         setPrevOpponentLng(newLng);
         setOpponentCoordinates(opponentPos);
@@ -189,16 +244,37 @@ export const Game = () => {
   useEffect(() => {
     if (distance !== null) {
       const newDistance = Math.round(distance).toString();
+      
+      // First, check for changes and set highlights
       if (prevDistance) {
         const distanceChanges = findChangedDigits(prevDistance, newDistance);
         if (distanceChanges.length > 0) {
           setHighlightDistance(distanceChanges);
-          setTimeout(() => setHighlightDistance([]), 500);
+          // Clear any existing timeouts
+          if (distanceTimeoutRef.current) {
+            clearTimeout(distanceTimeoutRef.current);
+          }
+          distanceTimeoutRef.current = setTimeout(() => {
+            setHighlightDistance([]);
+          }, 250);
         }
       }
+      
+      // Then update the previous value
       setPrevDistance(newDistance);
     }
   }, [distance]);
+
+  // Clean up timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (myLatTimeoutRef.current) clearTimeout(myLatTimeoutRef.current);
+      if (myLngTimeoutRef.current) clearTimeout(myLngTimeoutRef.current);
+      if (opponentLatTimeoutRef.current) clearTimeout(opponentLatTimeoutRef.current);
+      if (opponentLngTimeoutRef.current) clearTimeout(opponentLngTimeoutRef.current);
+      if (distanceTimeoutRef.current) clearTimeout(distanceTimeoutRef.current);
+    };
+  }, []);
 
   const isClose = distance !== null && distance <= 50;
   const isNearby = distance !== null && distance <= 500 && distance > 50;
@@ -228,7 +304,9 @@ export const Game = () => {
         key={index}
         style={{
           fontWeight: highlights.includes(index) ? 'bold' : 'normal',
-          transition: 'font-weight 0.1s ease',
+          transition: 'all 0.25s ease',
+          color: highlights.includes(index) ? theme.palette.primary.main : 'inherit',
+          backgroundColor: highlights.includes(index) ? theme.palette.primary.main + '20' : 'transparent',
         }}
       >
         {char}
