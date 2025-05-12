@@ -1,6 +1,5 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { LocationDisplayProps } from './types';
+import type { LocationDisplayProps } from './types';
 
 export const LocationDisplay = ({ title, coordinates, highlightLat, highlightLng, color, renderHighlightedNumber }: LocationDisplayProps) => {
   if (!coordinates) {

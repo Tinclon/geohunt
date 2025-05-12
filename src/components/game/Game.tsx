@@ -1,6 +1,5 @@
-import React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Container, Paper, useTheme, IconButton } from '@mui/material';
+import { Typography, Container, Paper, useTheme, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates } from '../../services/locationService';
 import { GPSExplanation } from '../GPSExplanation';
@@ -83,36 +82,20 @@ export const Game = () => {
       const newLat = myPos.latitude.toFixed(6);
       const newLng = myPos.longitude.toFixed(6);
 
-      // First, check for changes and set highlights
-      if (prevMyLat) {
+      // Check for changes and set highlights
+      if (prevMyLat !== newLat) {
         const latChanges = findChangedDigits(prevMyLat, newLat);
-        if (latChanges.length > 0) {
-          setHighlightMyLat(latChanges);
-          // Clear any existing timeouts
-          if (myLatTimeoutRef.current) {
-            clearTimeout(myLatTimeoutRef.current);
-          }
-          myLatTimeoutRef.current = setTimeout(() => {
-            setHighlightMyLat([]);
-          }, 250);
-        }
+        setHighlightMyLat(latChanges);
+        setTimeout(() => setHighlightMyLat([]), 400);
       }
 
-      if (prevMyLng) {
+      if (prevMyLng !== newLng) {
         const lngChanges = findChangedDigits(prevMyLng, newLng);
-        if (lngChanges.length > 0) {
-          setHighlightMyLng(lngChanges);
-          // Clear any existing timeouts
-          if (myLngTimeoutRef.current) {
-            clearTimeout(myLngTimeoutRef.current);
-          }
-          myLngTimeoutRef.current = setTimeout(() => {
-            setHighlightMyLng([]);
-          }, 250);
-        }
+        setHighlightMyLng(lngChanges);
+        setTimeout(() => setHighlightMyLng([]), 400);
       }
 
-      // Then update the coordinates and previous values
+      // Update coordinates and previous values
       setPrevMyLat(newLat);
       setPrevMyLng(newLng);
       setMyCoordinates(myPos);
@@ -133,36 +116,20 @@ export const Game = () => {
         const newLat = opponentPos.latitude.toFixed(6);
         const newLng = opponentPos.longitude.toFixed(6);
 
-        // First, check for changes and set highlights
-        if (prevOpponentLat) {
+        // Check for changes and set highlights
+        if (prevOpponentLat !== newLat) {
           const latChanges = findChangedDigits(prevOpponentLat, newLat);
-          if (latChanges.length > 0) {
-            setHighlightOpponentLat(latChanges);
-            // Clear any existing timeouts
-            if (opponentLatTimeoutRef.current) {
-              clearTimeout(opponentLatTimeoutRef.current);
-            }
-            opponentLatTimeoutRef.current = setTimeout(() => {
-              setHighlightOpponentLat([]);
-            }, 250);
-          }
+          setHighlightOpponentLat(latChanges);
+          setTimeout(() => setHighlightOpponentLat([]), 400);
         }
 
-        if (prevOpponentLng) {
+        if (prevOpponentLng !== newLng) {
           const lngChanges = findChangedDigits(prevOpponentLng, newLng);
-          if (lngChanges.length > 0) {
-            setHighlightOpponentLng(lngChanges);
-            // Clear any existing timeouts
-            if (opponentLngTimeoutRef.current) {
-              clearTimeout(opponentLngTimeoutRef.current);
-            }
-            opponentLngTimeoutRef.current = setTimeout(() => {
-              setHighlightOpponentLng([]);
-            }, 250);
-          }
+          setHighlightOpponentLng(lngChanges);
+          setTimeout(() => setHighlightOpponentLng([]), 400);
         }
 
-        // Then update the coordinates and previous values
+        // Update coordinates and previous values
         setPrevOpponentLat(newLat);
         setPrevOpponentLng(newLng);
         setOpponentCoordinates(opponentPos);
@@ -201,22 +168,12 @@ export const Game = () => {
     if (distance !== null) {
       const newDistance = Math.round(distance).toString();
       
-      // First, check for changes and set highlights
-      if (prevDistance) {
+      if (prevDistance !== newDistance) {
         const distanceChanges = findChangedDigits(prevDistance, newDistance);
-        if (distanceChanges.length > 0) {
-          setHighlightDistance(distanceChanges);
-          // Clear any existing timeouts
-          if (distanceTimeoutRef.current) {
-            clearTimeout(distanceTimeoutRef.current);
-          }
-          distanceTimeoutRef.current = setTimeout(() => {
-            setHighlightDistance([]);
-          }, 250);
-        }
+        setHighlightDistance(distanceChanges);
+        setTimeout(() => setHighlightDistance([]), 400);
       }
       
-      // Then update the previous value
       setPrevDistance(newDistance);
     }
   }, [distance]);
@@ -260,7 +217,7 @@ export const Game = () => {
         key={index}
         style={{
           fontWeight: highlights.includes(index) ? 'bold' : 'normal',
-          transition: 'all 0.25s ease',
+          transition: 'all 0.4s ease',
           color: highlights.includes(index) ? theme.palette.primary.main : 'inherit',
           backgroundColor: highlights.includes(index) ? theme.palette.primary.main + '20' : 'transparent',
         }}
