@@ -3,6 +3,7 @@ import { Box, Typography, Button, Container, Paper, useTheme, IconButton } from 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates } from '../services/locationService';
 import { GPSExplanation } from './GPSExplanation';
+import { CoordinatesExplanation } from './CoordinatesExplanation';
 import { CompassIndicator } from './CompassIndicator';
 
 type GameMode = 'hawk' | 'bluebird' | 'falcon' | 'starling';
@@ -22,6 +23,9 @@ export const Game = () => {
   });
   const [showGPSExplanation, setShowGPSExplanation] = useState(() => {
     return localStorage.getItem('showGPSExplanation') === 'true';
+  });
+  const [showCoordinatesExplanation, setShowCoordinatesExplanation] = useState(() => {
+    return localStorage.getItem('showCoordinatesExplanation') === 'true';
   });
   const [myCoordinates, setMyCoordinates] = useState<Coordinates | null>(null);
   const [opponentCoordinates, setOpponentCoordinates] = useState<Coordinates | null>(null);
@@ -63,6 +67,16 @@ export const Game = () => {
   const handleGPSExplanationClick = () => {
     setShowGPSExplanation(true);
     localStorage.setItem('showGPSExplanation', 'true');
+  };
+
+  const handleCoordinatesExplanationBack = () => {
+    setShowCoordinatesExplanation(false);
+    localStorage.removeItem('showCoordinatesExplanation');
+  };
+
+  const handleCoordinatesExplanationClick = () => {
+    setShowCoordinatesExplanation(true);
+    localStorage.setItem('showCoordinatesExplanation', 'true');
   };
 
   const updateMyLocation = async (saveToServer: boolean = false) => {
@@ -150,6 +164,10 @@ export const Game = () => {
     return <GPSExplanation onBack={handleGPSExplanationBack} />;
   }
 
+  if (showCoordinatesExplanation) {
+    return <CoordinatesExplanation onBack={handleCoordinatesExplanationBack} />;
+  }
+
   if (!mode) {
     return (
       <Container maxWidth={false} sx={{ 
@@ -232,23 +250,45 @@ export const Game = () => {
               Starling
             </Button>
           </Box>
-          <Button
-            variant="outlined"
-            size="large"
-            onClick={handleGPSExplanationClick}
-            sx={{
-              mt: 4,
-              width: '100%',
-              borderColor: theme.palette.grey[400],
-              color: theme.palette.grey[400],
-              '&:hover': {
-                borderColor: theme.palette.grey[200],
-                color: theme.palette.grey[200],
-              },
-            }}
-          >
-            How GPS Works
-          </Button>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr', 
+            gap: 2,
+            mt: 4
+          }}>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={handleGPSExplanationClick}
+              sx={{
+                width: '100%',
+                borderColor: theme.palette.grey[400],
+                color: theme.palette.grey[400],
+                '&:hover': {
+                  borderColor: theme.palette.grey[200],
+                  color: theme.palette.grey[200],
+                },
+              }}
+            >
+              How GPS Works
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={handleCoordinatesExplanationClick}
+              sx={{
+                width: '100%',
+                borderColor: theme.palette.grey[400],
+                color: theme.palette.grey[400],
+                '&:hover': {
+                  borderColor: theme.palette.grey[200],
+                  color: theme.palette.grey[200],
+                },
+              }}
+            >
+              How Coordinates Work
+            </Button>
+          </Box>
         </Paper>
       </Container>
     );
