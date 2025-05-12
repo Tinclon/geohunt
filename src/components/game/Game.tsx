@@ -133,7 +133,8 @@ export const Game = () => {
       // Pad the integer part for consistent comparison
       const [intPart, decPart] = formatted.split('.');
       const paddedInt = intPart.padStart(4, '\u00A0'); // Using non-breaking space
-      return decPart ? `${paddedInt}.${decPart}` : paddedInt;
+      const paddedDec = decPart && decPart.padEnd(6, '0'); // Using non-breaking space
+      return paddedDec ? `${paddedInt}.${paddedDec}` : paddedInt;
     } else {
       const dms = decimalToDMS(value, isLatitude);
       return formatDMS(dms);
