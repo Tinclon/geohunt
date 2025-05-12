@@ -82,17 +82,33 @@ export const Game = () => {
       const newLat = myPos.latitude.toFixed(6);
       const newLng = myPos.longitude.toFixed(6);
 
+      // Clear any existing timeouts before setting new ones
+      if (myLatTimeoutRef.current) {
+        clearTimeout(myLatTimeoutRef.current);
+        myLatTimeoutRef.current = undefined;
+      }
+      if (myLngTimeoutRef.current) {
+        clearTimeout(myLngTimeoutRef.current);
+        myLngTimeoutRef.current = undefined;
+      }
+
       // Only highlight if we have previous values and they're different
       if (prevMyLat && prevMyLat !== newLat) {
         const latChanges = findChangedDigits(prevMyLat, newLat);
         setHighlightMyLat(latChanges);
-        setTimeout(() => setHighlightMyLat([]), 400);
+        myLatTimeoutRef.current = window.setTimeout(() => {
+          setHighlightMyLat([]);
+          myLatTimeoutRef.current = undefined;
+        }, 400);
       }
 
       if (prevMyLng && prevMyLng !== newLng) {
         const lngChanges = findChangedDigits(prevMyLng, newLng);
         setHighlightMyLng(lngChanges);
-        setTimeout(() => setHighlightMyLng([]), 400);
+        myLngTimeoutRef.current = window.setTimeout(() => {
+          setHighlightMyLng([]);
+          myLngTimeoutRef.current = undefined;
+        }, 400);
       }
 
       // Update coordinates and previous values
@@ -116,17 +132,33 @@ export const Game = () => {
         const newLat = opponentPos.latitude.toFixed(6);
         const newLng = opponentPos.longitude.toFixed(6);
 
+        // Clear any existing timeouts before setting new ones
+        if (opponentLatTimeoutRef.current) {
+          clearTimeout(opponentLatTimeoutRef.current);
+          opponentLatTimeoutRef.current = undefined;
+        }
+        if (opponentLngTimeoutRef.current) {
+          clearTimeout(opponentLngTimeoutRef.current);
+          opponentLngTimeoutRef.current = undefined;
+        }
+
         // Only highlight if we have previous values and they're different
         if (prevOpponentLat && prevOpponentLat !== newLat) {
           const latChanges = findChangedDigits(prevOpponentLat, newLat);
           setHighlightOpponentLat(latChanges);
-          setTimeout(() => setHighlightOpponentLat([]), 400);
+          opponentLatTimeoutRef.current = window.setTimeout(() => {
+            setHighlightOpponentLat([]);
+            opponentLatTimeoutRef.current = undefined;
+          }, 400);
         }
 
         if (prevOpponentLng && prevOpponentLng !== newLng) {
           const lngChanges = findChangedDigits(prevOpponentLng, newLng);
           setHighlightOpponentLng(lngChanges);
-          setTimeout(() => setHighlightOpponentLng([]), 400);
+          opponentLngTimeoutRef.current = window.setTimeout(() => {
+            setHighlightOpponentLng([]);
+            opponentLngTimeoutRef.current = undefined;
+          }, 400);
         }
 
         // Update coordinates and previous values
@@ -168,11 +200,20 @@ export const Game = () => {
     if (distance !== null) {
       const newDistance = Math.round(distance).toString();
       
+      // Clear any existing timeout before setting a new one
+      if (distanceTimeoutRef.current) {
+        clearTimeout(distanceTimeoutRef.current);
+        distanceTimeoutRef.current = undefined;
+      }
+
       // Only highlight if we have a previous value and it's different
       if (prevDistance && prevDistance !== newDistance) {
         const distanceChanges = findChangedDigits(prevDistance, newDistance);
         setHighlightDistance(distanceChanges);
-        setTimeout(() => setHighlightDistance([]), 400);
+        distanceTimeoutRef.current = window.setTimeout(() => {
+          setHighlightDistance([]);
+          distanceTimeoutRef.current = undefined;
+        }, 400);
       }
       
       setPrevDistance(newDistance);
@@ -221,6 +262,8 @@ export const Game = () => {
           transition: 'all 0.4s ease',
           color: highlights.includes(index) ? theme.palette.primary.main : 'inherit',
           backgroundColor: highlights.includes(index) ? theme.palette.primary.main + '20' : 'transparent',
+          display: 'inline-block',
+          minWidth: '1ch',
         }}
       >
         {char}

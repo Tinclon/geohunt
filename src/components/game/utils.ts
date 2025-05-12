@@ -2,28 +2,16 @@ import type { GameMode } from './types';
 
 export const findChangedDigits = (oldStr: string, newStr: string): number[] => {
   const changes: number[] = [];
-  let i = 0;
-  let j = 0;
   
-  // Find the first difference
-  while (i < oldStr.length && j < newStr.length && oldStr[i] === newStr[j]) {
-    i++;
-    j++;
-  }
+  // Ensure both strings are the same length by padding with spaces
+  const maxLength = Math.max(oldStr.length, newStr.length);
+  const paddedOld = oldStr.padEnd(maxLength, ' ');
+  const paddedNew = newStr.padEnd(maxLength, ' ');
   
-  // If we found a difference, mark all characters from this point until the next matching character
-  if (i < oldStr.length || j < newStr.length) {
-    const startDiff = i;
-    
-    // Find where the strings match again
-    while (i < oldStr.length && j < newStr.length && oldStr[i] !== newStr[j]) {
-      i++;
-      j++;
-    }
-    
-    // Add all positions that changed
-    for (let k = startDiff; k < i; k++) {
-      changes.push(k);
+  // Compare each character and track changes
+  for (let i = 0; i < maxLength; i++) {
+    if (paddedOld[i] !== paddedNew[i]) {
+      changes.push(i);
     }
   }
   
