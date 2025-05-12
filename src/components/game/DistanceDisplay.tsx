@@ -10,6 +10,7 @@ export const DistanceDisplay = ({ distance, highlightDistance, renderHighlighted
       variant="body1"
       sx={{
         ...(!distance && { color: theme.palette.grey[500] }),
+        fontFamily: '"Roboto Mono", "SF Mono", "Consolas", "Liberation Mono", "Menlo", "Courier", monospace'
       }}
     >
       {distance !== null 

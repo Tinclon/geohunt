@@ -148,7 +148,7 @@ export const Game = () => {
   };
 
   const distance = myCoordinates && opponentCoordinates
-    ? calculateDistance(myCoordinates, opponentCoordinates)
+    ? Math.round(calculateDistance(myCoordinates, opponentCoordinates))
     : null;
 
   useEffect(() => {
@@ -208,7 +208,7 @@ export const Game = () => {
 
   useEffect(() => {
     if (distance !== null) {
-      const newDistance = Math.round(distance).toString();
+      const newDistance = distance.toString();
       
       // Handle distance changes
       if (prevDistanceRef.current && prevDistanceRef.current !== newDistance) {
@@ -254,8 +254,15 @@ export const Game = () => {
     }
   };
 
-  const renderHighlightedNumber = (value: string, highlights: number[]) => {
-    return value.split('').map((char, index) => (
+  const renderHighlightedNumber = (value: string, highlights: number[], shouldPad: boolean = false) => {
+    let displayValue = value;
+    if (shouldPad) {
+      const [intPart, decPart] = value.split('.');
+      const paddedInt = intPart.padStart(4, '\u00A0'); // Using non-breaking space
+      displayValue = decPart ? `${paddedInt}.${decPart}` : paddedInt;
+    }
+    
+    return displayValue.split('').map((char, index) => (
       <span
         key={index}
         style={{
@@ -353,7 +360,7 @@ export const Game = () => {
           highlightLat={highlightMyLat}
           highlightLng={highlightMyLng}
           color={getModeColor(mode)}
-          renderHighlightedNumber={renderHighlightedNumber}
+          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, true)}
         />
 
         <LocationDisplay
@@ -362,13 +369,13 @@ export const Game = () => {
           highlightLat={highlightOpponentLat}
           highlightLng={highlightOpponentLng}
           color={getModeColor(opponentMode)}
-          renderHighlightedNumber={renderHighlightedNumber}
+          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, true)}
         />
 
         <DistanceDisplay
           distance={distance}
           highlightDistance={highlightDistance}
-          renderHighlightedNumber={renderHighlightedNumber}
+          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights, false)}
           theme={theme}
         />
 
