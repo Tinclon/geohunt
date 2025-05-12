@@ -15,16 +15,20 @@ export const LocationDisplay = ({ title, coordinates, highlightLat, highlightLng
     );
   }
 
+  const formatCoordinate = (value: number) => {
+    return value.toFixed(6).replace(/\.?0+$/, '');
+  };
+
   return (
     <Box sx={{ mb: 3 }}>
       <Typography variant="h2" gutterBottom sx={{ color }}>
         {title}
       </Typography>
       <Typography variant="body1">
-        Latitude: {renderHighlightedNumber(coordinates.latitude.toFixed(6), highlightLat)}
+        Latitude: {renderHighlightedNumber(formatCoordinate(coordinates.latitude), highlightLat)}
       </Typography>
       <Typography variant="body1">
-        Longitude: {renderHighlightedNumber(coordinates.longitude.toFixed(6), highlightLng)}
+        Longitude: {renderHighlightedNumber(formatCoordinate(coordinates.longitude), highlightLng)}
       </Typography>
     </Box>
   );
