@@ -77,6 +77,8 @@ export const Game = () => {
   const handleBack = () => {
     setMode(null);
     localStorage.removeItem('gameMode');
+    setIsRunning(false);
+    localStorage.removeItem('isRunning');
   };
 
   const handleGPSExplanationBack = () => {
@@ -624,7 +626,7 @@ export const Game = () => {
             variant="contained"
             onClick={handleCoordinateSystemChange}
             sx={{ 
-              minWidth: 120,
+              minWidth: 90,
               bgcolor: 'grey.700',
               '&:hover': {
                 bgcolor: 'grey.600',
@@ -640,7 +642,7 @@ export const Game = () => {
             onClick={handleDifficultyChange}
             disabled={mode === 'bluebird' || mode === 'starling'}
             sx={{ 
-              minWidth: 120,
+              minWidth: 90,
               color: 'black',
               background: difficulty === 'Hard' ? 
                 `linear-gradient(45deg, ${theme.palette.error.main}, ${theme.palette.error.dark})` :
@@ -673,7 +675,7 @@ export const Game = () => {
               variant="contained"
               onClick={handleRunningToggle}
               sx={{ 
-                minWidth: 120,
+                minWidth: 90,
                 color: 'black',
                 background: isRunning ? 
                   `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})` :
@@ -685,7 +687,7 @@ export const Game = () => {
                 }
               }}
             >
-              {isRunning ? "I'm hiding" : "I'm running"}
+              {isRunning ? "Hiding" : "Running"}
             </Button>
           )}
         </Box>

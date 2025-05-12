@@ -8,6 +8,7 @@ interface Brick {
   height: number;
   color: string;
   active: boolean;
+  health: number;
 }
 
 interface InputState {
@@ -32,6 +33,7 @@ export const BrickoutGame = () => {
   });
   const bricksRef = useRef<Brick[]>([]);
   const animationRef = useRef<number | undefined>(undefined);
+  const levelRef = useRef<number>(1);
   const inputRef = useRef<InputState>({
     keyboard: { left: false, right: false },
     touch: { left: false, right: false },
@@ -44,6 +46,16 @@ export const BrickoutGame = () => {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const getRandomBallDirection = () => {
+      // Generate random angle between -60 and 60 degrees (in radians)
+      const angle = (Math.random() * 120 - 60) * (Math.PI / 180);
+      const speed = 4;
+      return {
+        dx: Math.sin(angle) * speed,
+        dy: -Math.cos(angle) * speed // Negative because y increases downward
+      };
+    };
 
     // Set canvas size to fill container
     const resizeCanvas = () => {
@@ -59,11 +71,12 @@ export const BrickoutGame = () => {
         width: 100,
         targetX: centerX
       };
+      const { dx, dy } = getRandomBallDirection();
       ballRef.current = {
         x: canvas.width / 2,
         y: canvas.height - 30,
-        dx: 4,
-        dy: -4,
+        dx,
+        dy,
         radius: 10
       };
       initBricks();
@@ -71,24 +84,39 @@ export const BrickoutGame = () => {
 
     // Initialize bricks
     const initBricks = () => {
-      const brickRowCount = 5;
-      const brickColumnCount = 9;
+      const brickRowCount = 4 + levelRef.current;
       const brickWidth = 75;
       const brickHeight = 20;
       const brickPadding = 10;
       const brickOffsetTop = 30;
-      const brickOffsetLeft = (canvas.width - (brickColumnCount * (brickWidth + brickPadding))) / 2;
+      
+      const availableWidth = canvas.width - (2 * brickPadding);
+      const brickColumnCount = Math.floor(availableWidth / (brickWidth + brickPadding));
+      
+      const totalBricksWidth = brickColumnCount * (brickWidth + brickPadding) - brickPadding;
+      const brickOffsetLeft = (canvas.width - totalBricksWidth) / 2;
+
+      // Generate vibrant colors for each row using a better color distribution
+      const rowColors = Array.from({ length: brickRowCount }, (_, i) => {
+        // Use a combination of hue rotation and complementary colors
+        const baseHue = (i * 60) % 360; // 60-degree steps for good color separation
+        const saturation = 85 + (i % 2) * 15; // Alternate between 85% and 100% saturation
+        const lightness = 45 + (i % 3) * 5; // Vary lightness between 45% and 55%
+        return `hsl(${baseHue}, ${saturation}%, ${lightness}%)`;
+      });
 
       bricksRef.current = [];
       for (let c = 0; c < brickColumnCount; c++) {
         for (let r = 0; r < brickRowCount; r++) {
+          const health = levelRef.current;
           bricksRef.current.push({
             x: brickOffsetLeft + c * (brickWidth + brickPadding),
             y: brickOffsetTop + r * (brickHeight + brickPadding),
             width: brickWidth,
             height: brickHeight,
-            color: `hsl(${(r * brickColumnCount + c) * 10}, 70%, 50%)`,
-            active: true
+            color: rowColors[r],
+            active: true,
+            health
           });
         }
       }
@@ -116,7 +144,10 @@ export const BrickoutGame = () => {
         if (brick.active) {
           ctx.beginPath();
           ctx.rect(brick.x, brick.y, brick.width, brick.height);
-          ctx.fillStyle = brick.color;
+          // Convert HSL to RGB for proper opacity handling
+          const [h, s, l] = brick.color.match(/\d+/g)!.map(Number);
+          const opacity = 0.4 + (brick.health / levelRef.current) * 0.6;
+          ctx.fillStyle = `hsla(${h}, ${s}%, ${l}%, ${opacity})`;
           ctx.fill();
           ctx.closePath();
         }
@@ -125,8 +156,11 @@ export const BrickoutGame = () => {
 
     // Collision detection
     const collisionDetection = () => {
+      let allBricksCleared = true;
+      
       bricksRef.current.forEach(brick => {
         if (brick.active) {
+          allBricksCleared = false;
           if (
             ballRef.current.x > brick.x &&
             ballRef.current.x < brick.x + brick.width &&
@@ -134,10 +168,25 @@ export const BrickoutGame = () => {
             ballRef.current.y < brick.y + brick.height
           ) {
             ballRef.current.dy = -ballRef.current.dy;
-            brick.active = false;
+            brick.health--;
+            if (brick.health <= 0) {
+              brick.active = false;
+            }
           }
         }
       });
+
+      // Check if all bricks are cleared
+      if (allBricksCleared) {
+        levelRef.current++;
+        initBricks();
+        // Reset ball position and give new random direction
+        ballRef.current.x = canvas.width / 2;
+        ballRef.current.y = canvas.height - 30;
+        const { dx, dy } = getRandomBallDirection();
+        ballRef.current.dx = dx;
+        ballRef.current.dy = dy;
+      }
     };
 
     // Update paddle position based on input priority
@@ -200,8 +249,9 @@ export const BrickoutGame = () => {
           // Game over
           ballRef.current.x = canvas.width / 2;
           ballRef.current.y = canvas.height - 30;
-          ballRef.current.dx = 3;
-          ballRef.current.dy = -3;
+          const { dx, dy } = getRandomBallDirection();
+          ballRef.current.dx = dx;
+          ballRef.current.dy = dy;
           initBricks();
         }
       }
@@ -265,6 +315,7 @@ export const BrickoutGame = () => {
     };
 
     // Initialize
+    levelRef.current = 1;
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('keydown', handleKeyDown);
