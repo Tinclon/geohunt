@@ -19,10 +19,11 @@ interface InputState {
 
 export const BrickoutGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const paddleRef = useRef<{ x: number; width: number; targetX: number }>({ 
+  const paddleRef = useRef<{ x: number; width: number; targetX: number; lastX: number }>({ 
     x: 0, 
     width: 100,
-    targetX: 0 
+    targetX: 0,
+    lastX: 0
   });
   const ballRef = useRef<{ x: number; y: number; dx: number; dy: number; radius: number }>({
     x: 0,
@@ -34,6 +35,7 @@ export const BrickoutGame = () => {
   const bricksRef = useRef<Brick[]>([]);
   const animationRef = useRef<number | undefined>(undefined);
   const levelRef = useRef<number>(1);
+  const scoreRef = useRef<number>(0);
   const inputRef = useRef<InputState>({
     keyboard: { left: false, right: false },
     touch: { left: false, right: false },
@@ -69,7 +71,8 @@ export const BrickoutGame = () => {
       paddleRef.current = {
         x: centerX,
         width: 100,
-        targetX: centerX
+        targetX: centerX,
+        lastX: centerX
       };
       const { dx, dy } = getRandomBallDirection();
       ballRef.current = {
@@ -88,7 +91,7 @@ export const BrickoutGame = () => {
       const brickWidth = 75;
       const brickHeight = 20;
       const brickPadding = 10;
-      const brickOffsetTop = 30;
+      const brickOffsetTop = 60;
       
       const availableWidth = canvas.width - (2 * brickPadding);
       const brickColumnCount = Math.floor(availableWidth / (brickWidth + brickPadding));
@@ -154,6 +157,22 @@ export const BrickoutGame = () => {
       });
     };
 
+    const drawLevelIndicator = () => {
+      ctx.font = '16px Arial';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(`Level ${levelRef.current}`, 10, 10);
+    };
+
+    const drawScoreIndicator = () => {
+      ctx.font = '16px Arial';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'top';
+      ctx.fillText(`Score: ${scoreRef.current}`, canvas.width - 10, 10);
+    };
+
     // Collision detection
     const collisionDetection = () => {
       let allBricksCleared = true;
@@ -169,8 +188,10 @@ export const BrickoutGame = () => {
           ) {
             ballRef.current.dy = -ballRef.current.dy;
             brick.health--;
+            scoreRef.current += 1; // Add point for hitting brick
             if (brick.health <= 0) {
               brick.active = false;
+              scoreRef.current += 1; // Add an extra point for eliminating brick
             }
           }
         }
@@ -224,10 +245,15 @@ export const BrickoutGame = () => {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
+      // Store paddle's previous position before updating
+      paddleRef.current.lastX = paddleRef.current.x;
+      
       updatePaddlePosition();
       drawBricks();
       drawBall();
       drawPaddle();
+      drawLevelIndicator();
+      drawScoreIndicator();
       collisionDetection();
 
       // Ball movement
@@ -244,7 +270,23 @@ export const BrickoutGame = () => {
           ballRef.current.x > paddleRef.current.x &&
           ballRef.current.x < paddleRef.current.x + paddleRef.current.width
         ) {
-          ballRef.current.dy = -ballRef.current.dy;
+          // Calculate where the ball hit the paddle (0 to 1)
+          const hitPosition = (ballRef.current.x - paddleRef.current.x) / paddleRef.current.width;
+          
+          // Calculate paddle movement speed
+          const paddleSpeed = (paddleRef.current.x - paddleRef.current.lastX) / 16; // Normalize by frame time
+          
+          // Calculate new angle based on hit position and paddle movement
+          // -0.5 to 0.5 maps to -75 to 75 degrees (increased from ±60)
+          const angle = (hitPosition - 0.5) * Math.PI * 5/6;
+          
+          // Add paddle movement influence (up to ±45 degrees, increased from ±30)
+          const movementInfluence = paddleSpeed * Math.PI / 4;
+          
+          // Calculate new direction with speed preservation
+          const speed = Math.sqrt(ballRef.current.dx * ballRef.current.dx + ballRef.current.dy * ballRef.current.dy);
+          ballRef.current.dx = Math.sin(angle + movementInfluence) * speed;
+          ballRef.current.dy = -Math.cos(angle + movementInfluence) * speed;
         } else {
           // Game over
           ballRef.current.x = canvas.width / 2;
@@ -326,6 +368,7 @@ export const BrickoutGame = () => {
 
     // Initialize
     levelRef.current = 1;
+    scoreRef.current = 0;
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('keydown', handleKeyDown);
