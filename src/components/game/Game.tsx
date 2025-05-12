@@ -87,13 +87,18 @@ export const Game = () => {
     localStorage.setItem('showCoordinatesExplanation', 'true');
   };
 
-  const handleDifficultyChange = () => {
+  const handleDifficultyChange = async () => {
     const difficulties: Difficulty[] = ['Hard', 'Medium', 'Easy'];
     const currentIndex = difficulties.indexOf(difficulty);
     const nextIndex = (currentIndex + 1) % difficulties.length;
     const newDifficulty = difficulties[nextIndex];
     setDifficulty(newDifficulty);
     localStorage.setItem('gameDifficulty', newDifficulty);
+
+    // Update server with new difficulty immediately
+    if (mode && myCoordinates) {
+      await storeCoordinates(mode, myCoordinates, newDifficulty);
+    }
   };
 
   const formatCoordinate = (value: number) => {
@@ -175,6 +180,11 @@ export const Game = () => {
           const opponentDifficulty = opponentPos.difficulty as Difficulty;
           setDifficulty(opponentDifficulty);
           localStorage.setItem('gameDifficulty', opponentDifficulty);
+          
+          // Update server with new difficulty
+          if (myCoordinates) {
+            await storeCoordinates(mode, myCoordinates, opponentDifficulty);
+          }
         }
       }
       setError(null);
