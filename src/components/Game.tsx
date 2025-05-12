@@ -30,16 +30,16 @@ export const Game = () => {
   const [myCoordinates, setMyCoordinates] = useState<Coordinates | null>(null);
   const [opponentCoordinates, setOpponentCoordinates] = useState<Coordinates | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [prevMyLat, setPrevMyLat] = useState<number | null>(null);
-  const [prevMyLng, setPrevMyLng] = useState<number | null>(null);
-  const [prevOpponentLat, setPrevOpponentLat] = useState<number | null>(null);
-  const [prevOpponentLng, setPrevOpponentLng] = useState<number | null>(null);
-  const [prevDistance, setPrevDistance] = useState<number | null>(null);
-  const [highlightMyLat, setHighlightMyLat] = useState(false);
-  const [highlightMyLng, setHighlightMyLng] = useState(false);
-  const [highlightOpponentLat, setHighlightOpponentLat] = useState(false);
-  const [highlightOpponentLng, setHighlightOpponentLng] = useState(false);
-  const [highlightDistance, setHighlightDistance] = useState(false);
+  const [prevMyLat, setPrevMyLat] = useState<string>('');
+  const [prevMyLng, setPrevMyLng] = useState<string>('');
+  const [prevOpponentLat, setPrevOpponentLat] = useState<string>('');
+  const [prevOpponentLng, setPrevOpponentLng] = useState<string>('');
+  const [prevDistance, setPrevDistance] = useState<string>('');
+  const [highlightMyLat, setHighlightMyLat] = useState<number[]>([]);
+  const [highlightMyLng, setHighlightMyLng] = useState<number[]>([]);
+  const [highlightOpponentLat, setHighlightOpponentLat] = useState<number[]>([]);
+  const [highlightOpponentLng, setHighlightOpponentLng] = useState<number[]>([]);
+  const [highlightDistance, setHighlightDistance] = useState<number[]>([]);
 
   const getOpponentMode = (currentMode: GameMode): GameMode => {
     switch (currentMode) {
@@ -86,19 +86,40 @@ export const Game = () => {
     localStorage.setItem('showCoordinatesExplanation', 'true');
   };
 
+  const findChangedDigits = (oldStr: string, newStr: string): number[] => {
+    const changes: number[] = [];
+    const maxLength = Math.max(oldStr.length, newStr.length);
+    for (let i = 0; i < maxLength; i++) {
+      if (oldStr[i] !== newStr[i]) {
+        changes.push(i);
+      }
+    }
+    return changes;
+  };
+
   const updateMyLocation = async (saveToServer: boolean = false) => {
     try {
       const myPos = await getCurrentPosition();
-      if (myPos.latitude !== prevMyLat) {
-        setHighlightMyLat(true);
-        setTimeout(() => setHighlightMyLat(false), 500);
+      const newLat = myPos.latitude.toFixed(6);
+      const newLng = myPos.longitude.toFixed(6);
+
+      if (prevMyLat) {
+        const latChanges = findChangedDigits(prevMyLat, newLat);
+        if (latChanges.length > 0) {
+          setHighlightMyLat(latChanges);
+          setTimeout(() => setHighlightMyLat([]), 500);
+        }
       }
-      if (myPos.longitude !== prevMyLng) {
-        setHighlightMyLng(true);
-        setTimeout(() => setHighlightMyLng(false), 500);
+      if (prevMyLng) {
+        const lngChanges = findChangedDigits(prevMyLng, newLng);
+        if (lngChanges.length > 0) {
+          setHighlightMyLng(lngChanges);
+          setTimeout(() => setHighlightMyLng([]), 500);
+        }
       }
-      setPrevMyLat(myPos.latitude);
-      setPrevMyLng(myPos.longitude);
+
+      setPrevMyLat(newLat);
+      setPrevMyLng(newLng);
       setMyCoordinates(myPos);
       if (mode && saveToServer) {
         await storeCoordinates(mode, myPos);
@@ -113,16 +134,26 @@ export const Game = () => {
     try {
       const opponentPos = await getOpponentCoordinates(opponentMode);
       if (opponentPos) {
-        if (opponentPos.latitude !== prevOpponentLat) {
-          setHighlightOpponentLat(true);
-          setTimeout(() => setHighlightOpponentLat(false), 500);
+        const newLat = opponentPos.latitude.toFixed(6);
+        const newLng = opponentPos.longitude.toFixed(6);
+
+        if (prevOpponentLat) {
+          const latChanges = findChangedDigits(prevOpponentLat, newLat);
+          if (latChanges.length > 0) {
+            setHighlightOpponentLat(latChanges);
+            setTimeout(() => setHighlightOpponentLat([]), 500);
+          }
         }
-        if (opponentPos.longitude !== prevOpponentLng) {
-          setHighlightOpponentLng(true);
-          setTimeout(() => setHighlightOpponentLng(false), 500);
+        if (prevOpponentLng) {
+          const lngChanges = findChangedDigits(prevOpponentLng, newLng);
+          if (lngChanges.length > 0) {
+            setHighlightOpponentLng(lngChanges);
+            setTimeout(() => setHighlightOpponentLng([]), 500);
+          }
         }
-        setPrevOpponentLat(opponentPos.latitude);
-        setPrevOpponentLng(opponentPos.longitude);
+
+        setPrevOpponentLat(newLat);
+        setPrevOpponentLng(newLng);
         setOpponentCoordinates(opponentPos);
       }
       setError(null);
@@ -156,10 +187,16 @@ export const Game = () => {
   }, [mode]);
 
   useEffect(() => {
-    if (distance !== null && distance !== prevDistance) {
-      setHighlightDistance(true);
-      setTimeout(() => setHighlightDistance(false), 500);
-      setPrevDistance(distance);
+    if (distance !== null) {
+      const newDistance = Math.round(distance).toString();
+      if (prevDistance) {
+        const distanceChanges = findChangedDigits(prevDistance, newDistance);
+        if (distanceChanges.length > 0) {
+          setHighlightDistance(distanceChanges);
+          setTimeout(() => setHighlightDistance([]), 500);
+        }
+      }
+      setPrevDistance(newDistance);
     }
   }, [distance]);
 
@@ -183,6 +220,20 @@ export const Game = () => {
       case 'starling':
         return theme.palette.success.main;
     }
+  };
+
+  const renderHighlightedNumber = (value: string, highlights: number[]) => {
+    return value.split('').map((char, index) => (
+      <span
+        key={index}
+        style={{
+          fontWeight: highlights.includes(index) ? 'bold' : 'normal',
+          transition: 'font-weight 0.1s ease',
+        }}
+      >
+        {char}
+      </span>
+    ));
   };
 
   if (showGPSExplanation) {
@@ -382,23 +433,11 @@ export const Game = () => {
             <Typography variant="h2" gutterBottom sx={{ color: getModeColor(mode) }}>
               Your Location
             </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                fontWeight: highlightMyLat ? 'bold' : 'normal',
-                transition: 'font-weight 0.1s ease',
-              }}
-            >
-              Latitude: {myCoordinates.latitude.toFixed(6)}
+            <Typography variant="body1">
+              Latitude: {renderHighlightedNumber(myCoordinates.latitude.toFixed(6), highlightMyLat)}
             </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                fontWeight: highlightMyLng ? 'bold' : 'normal',
-                transition: 'font-weight 0.1s ease',
-              }}
-            >
-              Longitude: {myCoordinates.longitude.toFixed(6)}
+            <Typography variant="body1">
+              Longitude: {renderHighlightedNumber(myCoordinates.longitude.toFixed(6), highlightMyLng)}
             </Typography>
           </Box>
         )}
@@ -408,23 +447,11 @@ export const Game = () => {
             <Typography variant="h2" gutterBottom sx={{ color: getModeColor(opponentMode) }}>
               {opponentMode.charAt(0).toUpperCase() + opponentMode.slice(1)}'s Location
             </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                fontWeight: highlightOpponentLat ? 'bold' : 'normal',
-                transition: 'font-weight 0.1s ease',
-              }}
-            >
-              Latitude: {opponentCoordinates.latitude.toFixed(6)}
+            <Typography variant="body1">
+              Latitude: {renderHighlightedNumber(opponentCoordinates.latitude.toFixed(6), highlightOpponentLat)}
             </Typography>
-            <Typography 
-              variant="body1"
-              sx={{
-                fontWeight: highlightOpponentLng ? 'bold' : 'normal',
-                transition: 'font-weight 0.1s ease',
-              }}
-            >
-              Longitude: {opponentCoordinates.longitude.toFixed(6)}
+            <Typography variant="body1">
+              Longitude: {renderHighlightedNumber(opponentCoordinates.longitude.toFixed(6), highlightOpponentLng)}
             </Typography>
           </Box>
         )}
@@ -447,12 +474,12 @@ export const Game = () => {
           <Typography 
             variant="body1"
             sx={{
-              fontWeight: highlightDistance ? 'bold' : 'normal',
-              transition: 'font-weight 0.1s ease',
               ...(!distance && { color: theme.palette.grey[500] }),
             }}
           >
-            {distance !== null ? `${Math.round(distance)} meters` : 'Unknown'}
+            {distance !== null 
+              ? `${renderHighlightedNumber(Math.round(distance).toString(), highlightDistance)} meters`
+              : 'Unknown'}
           </Typography>
         </Box>
 
