@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Typography, Container, Paper, useTheme, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates } from '../../services/locationService';
+import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates, watchPosition } from '../../services/locationService';
 import { GPSExplanation } from '../GPSExplanation';
 import { CoordinatesExplanation } from '../CoordinatesExplanation';
 import { CompassIndicator } from '../CompassIndicator';
@@ -43,6 +43,7 @@ export const Game = () => {
   const [highlightOpponentLat, setHighlightOpponentLat] = useState<number[]>([]);
   const [highlightOpponentLng, setHighlightOpponentLng] = useState<number[]>([]);
   const [highlightDistance, setHighlightDistance] = useState<number[]>([]);
+  const watchIdRef = useRef<number>(-1);
 
   const opponentMode = mode ? getOpponentMode(mode) : 'hawk';
 
@@ -156,14 +157,49 @@ export const Game = () => {
       updateMyLocation(true); // Save initial position
       updateOpponentLocation();
 
-      // Set up intervals
-      const myLocationInterval = setInterval(() => updateMyLocation(false), 500); // Update display every 0.5 seconds
-      const saveLocationInterval = setInterval(() => updateMyLocation(true), 5 * 1000); // Save to server every 5 seconds
-      const opponentInterval = setInterval(updateOpponentLocation, 5 * 1000); // Update opponent every 5 seconds
+      // Set up watch position
+      watchIdRef.current = watchPosition(
+        (position) => {
+          const newLat = formatCoordinate(position.latitude);
+          const newLng = formatCoordinate(position.longitude);
 
-      // Cleanup intervals
+          // Handle latitude changes
+          if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
+            const latChanges = findChangedDigits(prevMyLatRef.current, newLat);
+            setHighlightMyLat(latChanges);
+            setTimeout(() => setHighlightMyLat([]), 400);
+          }
+
+          // Handle longitude changes
+          if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
+            const lngChanges = findChangedDigits(prevMyLngRef.current, newLng);
+            setHighlightMyLng(lngChanges);
+            setTimeout(() => setHighlightMyLng([]), 400);
+          }
+
+          // Update previous values and coordinates
+          prevMyLatRef.current = newLat;
+          prevMyLngRef.current = newLng;
+          setMyCoordinates(position);
+        },
+        (error) => {
+          setError(null);
+        }
+      );
+
+      // Set up intervals for server updates and opponent location
+      const saveLocationInterval = setInterval(() => {
+        if (myCoordinates) {
+          storeCoordinates(mode, myCoordinates);
+        }
+      }, 5 * 1000);
+      const opponentInterval = setInterval(updateOpponentLocation, 5 * 1000);
+
+      // Cleanup intervals and watch position
       return () => {
-        clearInterval(myLocationInterval);
+        if (watchIdRef.current !== -1) {
+          navigator.geolocation.clearWatch(watchIdRef.current);
+        }
         clearInterval(saveLocationInterval);
         clearInterval(opponentInterval);
       };

@@ -72,4 +72,35 @@ export const getCurrentPosition = (): Promise<Coordinates> => {
       );
     }
   });
+};
+
+export const watchPosition = (
+  onSuccess: (coordinates: Coordinates) => void,
+  onError: (error: GeolocationPositionError) => void
+): number => {
+  if (!navigator.geolocation) {
+    onError({
+      code: 2,
+      message: 'Geolocation is not supported by your browser',
+      PERMISSION_DENIED: 1,
+      POSITION_UNAVAILABLE: 2,
+      TIMEOUT: 3
+    });
+    return -1;
+  }
+
+  return navigator.geolocation.watchPosition(
+    (position) => {
+      onSuccess({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      });
+    },
+    onError,
+    {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    }
+  );
 }; 
