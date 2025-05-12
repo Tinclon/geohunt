@@ -8,6 +8,7 @@ import { CompassIndicator } from '../CompassIndicator';
 import { LocationDisplay } from './LocationDisplay';
 import { DistanceDisplay } from './DistanceDisplay';
 import { ModeSelection } from './ModeSelection';
+import { BrickoutGame } from './BrickoutGame';
 import type { GameMode, Coordinates } from './types';
 import type { CoordinateSystem } from './utils';
 import { findChangedChars, getOpponentMode, decimalToDMS, formatDMS } from './utils';
@@ -429,104 +430,187 @@ export const Game = () => {
           overflow: 'auto'
         }}
       >
-        <IconButton
-          onClick={handleBack}
-          sx={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
-            color: theme.palette.grey[400],
-            '&:hover': {
-              color: theme.palette.grey[200],
-            },
-          }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: isRunning ? 0 : 4
+        }}>
+          {isRunning ? (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography variant="body1" sx={{ 
+                  minWidth: '80px',
+                  fontFamily: '"Roboto Mono", "SF Mono", "Consolas", "Liberation Mono", "Menlo", "Courier", monospace',
+                  color: 'white',
+                }}>
+                  {distance !== null ? (
+                    <>
+                      {renderHighlightedNumber(distance.toString(), highlightDistance)}
+                      &nbsp;meters
+                    </>
+                  ) : (
+                    'Unknown'
+                  )}
+                </Typography>
+                {isClose && (
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      color: theme.palette.error.main,
+                      animation: 'flash 1s infinite',
+                      fontSize: '1.2rem',
+                      '@keyframes flash': {
+                        '0%': { 
+                          opacity: 1,
+                          textShadow: `0 0 20px ${theme.palette.error.main}`,
+                        },
+                        '50%': { 
+                          opacity: 0.5,
+                          textShadow: `0 0 10px ${theme.palette.error.main}`,
+                        },
+                        '100%': { 
+                          opacity: 1,
+                          textShadow: `0 0 20px ${theme.palette.error.main}`,
+                        },
+                      },
+                    }}
+                  >
+                    WARNING
+                  </Typography>
+                )}
+              </Box>
+              <IconButton
+                onClick={handleBack}
+                sx={{
+                  color: theme.palette.grey[400],
+                  '&:hover': {
+                    color: theme.palette.grey[200],
+                  },
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+            </>
+          ) : (
+            <>
+              <IconButton
+                onClick={handleBack}
+                sx={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  color: theme.palette.grey[400],
+                  '&:hover': {
+                    color: theme.palette.grey[200],
+                  },
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
 
-        <CompassIndicator />
+              <CompassIndicator />
 
-        <Typography 
-          variant="h1" 
-          gutterBottom
-          sx={{
-            color: getModeColor(mode),
-            pr: 6,
-          }}
-        >
-          {mode.charAt(0).toUpperCase() + mode.slice(1)}
-        </Typography>
+              <Typography 
+                variant="h1" 
+                gutterBottom
+                sx={{
+                  color: getModeColor(mode),
+                  pr: 6,
+                }}
+              >
+                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </Typography>
+            </>
+          )}
+        </Box>
 
-        {error && (
-          <Typography color="error" sx={{ mb: 2 }}>
-            {error}
-          </Typography>
+        {!isRunning && (
+          <>
+            {error && (
+              <Typography color="error" sx={{ mb: 2 }}>
+                {error}
+              </Typography>
+            )}
+
+            <LocationDisplay
+              title="Your Location"
+              coordinates={formattedMyCoordinates}
+              highlightLat={highlightMyLat}
+              highlightLng={highlightMyLng}
+              color={getModeColor(mode)}
+              renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
+              prevCoordinates={prevMyCoordinates ? {
+                latitude: formatCoordinate(prevMyCoordinates.latitude, true),
+                longitude: formatCoordinate(prevMyCoordinates.longitude, false)
+              } : null}
+              difficulty={difficulty}
+            />
+
+            <LocationDisplay
+              title={`${opponentMode.charAt(0).toUpperCase() + opponentMode.slice(1)}'s Location`}
+              coordinates={formattedOpponentCoordinates}
+              highlightLat={highlightOpponentLat}
+              highlightLng={highlightOpponentLng}
+              color={getModeColor(opponentMode)}
+              renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
+              prevCoordinates={prevOpponentCoordinates ? {
+                latitude: formatCoordinate(prevOpponentCoordinates.latitude, true),
+                longitude: formatCoordinate(prevOpponentCoordinates.longitude, false)
+              } : null}
+              difficulty={difficulty}
+            />
+
+            <DistanceDisplay
+              distance={distance}
+              highlightDistance={highlightDistance}
+              renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
+              theme={theme}
+              myCoordinates={myCoordinates}
+              opponentCoordinates={opponentCoordinates}
+              difficulty={difficulty}
+            />
+
+            {isClose && (
+              <Typography
+                variant="h3"
+                sx={{
+                  color: theme.palette.error.main,
+                  animation: 'flash 1s infinite',
+                  fontSize: '1.2rem',
+                  mb: 4,
+                  '@keyframes flash': {
+                    '0%': { 
+                      opacity: 1,
+                      textShadow: `0 0 20px ${theme.palette.error.main}`,
+                    },
+                    '50%': { 
+                      opacity: 0.5,
+                      textShadow: `0 0 10px ${theme.palette.error.main}`,
+                    },
+                    '100%': { 
+                      opacity: 1,
+                      textShadow: `0 0 20px ${theme.palette.error.main}`,
+                    },
+                  },
+                }}
+              >
+                WARNING: Opponent is nearby!
+              </Typography>
+            )}
+          </>
         )}
 
-        <LocationDisplay
-          title="Your Location"
-          coordinates={formattedMyCoordinates}
-          highlightLat={highlightMyLat}
-          highlightLng={highlightMyLng}
-          color={getModeColor(mode)}
-          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
-          prevCoordinates={prevMyCoordinates ? {
-            latitude: formatCoordinate(prevMyCoordinates.latitude, true),
-            longitude: formatCoordinate(prevMyCoordinates.longitude, false)
-          } : null}
-          difficulty={difficulty}
-        />
-
-        <LocationDisplay
-          title={`${opponentMode.charAt(0).toUpperCase() + opponentMode.slice(1)}'s Location`}
-          coordinates={formattedOpponentCoordinates}
-          highlightLat={highlightOpponentLat}
-          highlightLng={highlightOpponentLng}
-          color={getModeColor(opponentMode)}
-          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
-          prevCoordinates={prevOpponentCoordinates ? {
-            latitude: formatCoordinate(prevOpponentCoordinates.latitude, true),
-            longitude: formatCoordinate(prevOpponentCoordinates.longitude, false)
-          } : null}
-          difficulty={difficulty}
-        />
-
-        <DistanceDisplay
-          distance={distance}
-          highlightDistance={highlightDistance}
-          renderHighlightedNumber={(value, highlights) => renderHighlightedNumber(value, highlights)}
-          theme={theme}
-          myCoordinates={myCoordinates}
-          opponentCoordinates={opponentCoordinates}
-          difficulty={difficulty}
-        />
-
-        {isClose && (
-          <Typography
-            variant="h3"
-            sx={{
-              color: theme.palette.error.main,
-              animation: 'flash 1s infinite',
-              fontSize: '1.2rem',
-              mb: 4,
-              '@keyframes flash': {
-                '0%': { 
-                  opacity: 1,
-                  textShadow: `0 0 20px ${theme.palette.error.main}`,
-                },
-                '50%': { 
-                  opacity: 0.5,
-                  textShadow: `0 0 10px ${theme.palette.error.main}`,
-                },
-                '100%': { 
-                  opacity: 1,
-                  textShadow: `0 0 20px ${theme.palette.error.main}`,
-                },
-              },
-            }}
-          >
-            WARNING: Opponent is nearby!
-          </Typography>
+        {isRunning && (
+          <Box sx={{ 
+            flex: 1,
+            position: 'relative',
+            overflow: 'hidden',
+            maxHeight: 'calc(100% - 200px)',
+            mb: 4
+          }}>
+            <BrickoutGame />
+          </Box>
         )}
 
         <Box sx={{ 
@@ -585,9 +669,9 @@ export const Game = () => {
               onClick={handleRunningToggle}
               sx={{ 
                 minWidth: 120,
-                bgcolor: isRunning ? 'warning.main' : 'error.main',
+                bgcolor: isRunning ? 'primary.main' : 'error.main',
                 '&:hover': {
-                  bgcolor: isRunning ? 'warning.dark' : 'error.dark',
+                  bgcolor: isRunning ? 'primary.dark' : 'error.dark',
                 },
                 color: 'white',
                 fontWeight: 'bold'
