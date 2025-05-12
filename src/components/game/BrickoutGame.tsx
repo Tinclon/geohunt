@@ -9,6 +9,8 @@ interface Brick {
   color: string;
   active: boolean;
   health: number;
+  hasBonus: boolean;
+  hasExplosion: boolean;
 }
 
 interface InputState {
@@ -19,23 +21,26 @@ interface InputState {
 
 export const BrickoutGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const paddleRef = useRef<{ x: number; width: number; targetX: number; lastX: number }>({ 
+  const paddleRef = useRef<{ x: number; width: number; targetX: number; lastX: number; color: string }>({ 
     x: 0, 
     width: 100,
     targetX: 0,
-    lastX: 0
+    lastX: 0,
+    color: '#fff'
   });
-  const ballRef = useRef<{ x: number; y: number; dx: number; dy: number; radius: number }>({
+  const ballRef = useRef<{ x: number; y: number; dx: number; dy: number; radius: number; color: string }>({
     x: 0,
     y: 0,
     dx: 4,
     dy: -4,
-    radius: 10
+    radius: 10,
+    color: '#fff'
   });
   const bricksRef = useRef<Brick[]>([]);
   const animationRef = useRef<number | undefined>(undefined);
   const levelRef = useRef<number>(1);
   const scoreRef = useRef<number>(0);
+  const livesRef = useRef<number>(3);
   const inputRef = useRef<InputState>({
     keyboard: { left: false, right: false },
     touch: { left: false, right: false },
@@ -72,7 +77,8 @@ export const BrickoutGame = () => {
         x: centerX,
         width: 100,
         targetX: centerX,
-        lastX: centerX
+        lastX: centerX,
+        color: '#fff'
       };
       const { dx, dy } = getRandomBallDirection();
       ballRef.current = {
@@ -80,7 +86,8 @@ export const BrickoutGame = () => {
         y: canvas.height - 30,
         dx,
         dy,
-        radius: 10
+        radius: 10,
+        color: '#fff'
       };
       initBricks();
     };
@@ -112,6 +119,10 @@ export const BrickoutGame = () => {
       for (let c = 0; c < brickColumnCount; c++) {
         for (let r = 0; r < brickRowCount; r++) {
           const health = levelRef.current;
+          // 2% chance for a brick to have a bonus
+          const hasBonus = Math.random() < 0.02;
+          // 5% chance for a brick to have an explosion (reduced from 20%)
+          const hasExplosion = Math.random() < 0.05;
           bricksRef.current.push({
             x: brickOffsetLeft + c * (brickWidth + brickPadding),
             y: brickOffsetTop + r * (brickHeight + brickPadding),
@@ -119,7 +130,9 @@ export const BrickoutGame = () => {
             height: brickHeight,
             color: rowColors[r],
             active: true,
-            health
+            health,
+            hasBonus,
+            hasExplosion
           });
         }
       }
@@ -129,7 +142,7 @@ export const BrickoutGame = () => {
     const drawBall = () => {
       ctx.beginPath();
       ctx.arc(ballRef.current.x, ballRef.current.y, ballRef.current.radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = ballRef.current.color;
       ctx.fill();
       ctx.closePath();
     };
@@ -137,7 +150,7 @@ export const BrickoutGame = () => {
     const drawPaddle = () => {
       ctx.beginPath();
       ctx.rect(paddleRef.current.x, canvas.height - 20, paddleRef.current.width, 10);
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = paddleRef.current.color;
       ctx.fill();
       ctx.closePath();
     };
@@ -153,6 +166,24 @@ export const BrickoutGame = () => {
           ctx.fillStyle = `hsla(${h}, ${s}%, ${l}%, ${opacity})`;
           ctx.fill();
           ctx.closePath();
+
+          // Draw bonus indicator if brick has bonus
+          if (brick.hasBonus) {
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('+1', brick.x + brick.width / 2, brick.y + brick.height / 2);
+          }
+
+          // Draw explosion indicator if brick has explosion
+          if (brick.hasExplosion) {
+            ctx.font = '16px Arial';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💥', brick.x + brick.width / 2, brick.y + brick.height / 2);
+          }
         }
       });
     };
@@ -163,6 +194,7 @@ export const BrickoutGame = () => {
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(`Level ${levelRef.current}`, 10, 10);
+      ctx.fillText(`Lives: ${livesRef.current}`, 100, 10);
     };
 
     const drawScoreIndicator = () => {
@@ -171,6 +203,40 @@ export const BrickoutGame = () => {
       ctx.textAlign = 'right';
       ctx.textBaseline = 'top';
       ctx.fillText(`Score: ${scoreRef.current}`, canvas.width - 10, 10);
+    };
+
+    // Reset ball position and give new random direction
+    const resetBall = () => {
+      ballRef.current.x = canvas.width / 2;
+      ballRef.current.y = canvas.height - 30;
+      const { dx, dy } = getRandomBallDirection();
+      ballRef.current.dx = dx;
+      ballRef.current.dy = dy;
+      ballRef.current.color = '#fff'; // Reset to white
+      paddleRef.current.color = '#fff'; // Reset paddle to white
+    };
+
+    // Find surrounding bricks
+    const findSurroundingBricks = (brick: Brick) => {
+      const surroundingBricks: Brick[] = [];
+      const brickWidth = brick.width;
+      const brickHeight = brick.height;
+      const brickPadding = 10;
+
+      bricksRef.current.forEach(otherBrick => {
+        if (otherBrick.active && otherBrick !== brick) {
+          // Check if the other brick is adjacent (including diagonals)
+          const isAdjacent = 
+            Math.abs(otherBrick.x - brick.x) <= brickWidth + brickPadding &&
+            Math.abs(otherBrick.y - brick.y) <= brickHeight + brickPadding;
+          
+          if (isAdjacent) {
+            surroundingBricks.push(otherBrick);
+          }
+        }
+      });
+
+      return surroundingBricks;
     };
 
     // Collision detection
@@ -192,6 +258,21 @@ export const BrickoutGame = () => {
             if (brick.health <= 0) {
               brick.active = false;
               scoreRef.current += 1; // Add an extra point for eliminating brick
+              ballRef.current.color = brick.color; // Update ball color to match eliminated brick
+              
+              // Add life if brick had bonus
+              if (brick.hasBonus) {
+                livesRef.current++;
+              }
+
+              // Handle explosion effect
+              if (brick.hasExplosion) {
+                const surroundingBricks = findSurroundingBricks(brick);
+                surroundingBricks.forEach(surroundingBrick => {
+                  surroundingBrick.active = false;
+                  scoreRef.current += 2; // Add points for each brick eliminated by explosion
+                });
+              }
             }
           }
         }
@@ -201,12 +282,7 @@ export const BrickoutGame = () => {
       if (allBricksCleared) {
         levelRef.current++;
         initBricks();
-        // Reset ball position and give new random direction
-        ballRef.current.x = canvas.width / 2;
-        ballRef.current.y = canvas.height - 30;
-        const { dx, dy } = getRandomBallDirection();
-        ballRef.current.dx = dx;
-        ballRef.current.dy = dy;
+        resetBall();
       }
     };
 
@@ -241,6 +317,15 @@ export const BrickoutGame = () => {
       paddleRef.current.x += (targetX - paddleRef.current.x) * smoothingFactor;
     };
 
+    // Reset game state
+    const resetGame = () => {
+      levelRef.current = 1;
+      scoreRef.current = 0;
+      livesRef.current = 3;
+      initBricks();
+      resetBall();
+    };
+
     // Game loop
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -270,6 +355,9 @@ export const BrickoutGame = () => {
           ballRef.current.x > paddleRef.current.x &&
           ballRef.current.x < paddleRef.current.x + paddleRef.current.width
         ) {
+          // Update paddle color to match ball
+          paddleRef.current.color = ballRef.current.color;
+          
           // Calculate where the ball hit the paddle (0 to 1)
           const hitPosition = (ballRef.current.x - paddleRef.current.x) / paddleRef.current.width;
           
@@ -288,13 +376,15 @@ export const BrickoutGame = () => {
           ballRef.current.dx = Math.sin(angle + movementInfluence) * speed;
           ballRef.current.dy = -Math.cos(angle + movementInfluence) * speed;
         } else {
-          // Game over
-          ballRef.current.x = canvas.width / 2;
-          ballRef.current.y = canvas.height - 30;
-          const { dx, dy } = getRandomBallDirection();
-          ballRef.current.dx = dx;
-          ballRef.current.dy = dy;
-          initBricks();
+          // Lost a life
+          livesRef.current--;
+          if (livesRef.current <= 0) {
+            // Game over - reset everything
+            resetGame();
+          } else {
+            // Reset ball position but keep level and score
+            resetBall();
+          }
         }
       }
 
@@ -367,8 +457,7 @@ export const BrickoutGame = () => {
     };
 
     // Initialize
-    levelRef.current = 1;
-    scoreRef.current = 0;
+    resetGame();
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('keydown', handleKeyDown);
