@@ -30,7 +30,6 @@ const calculateHeading = (alpha: number | null, beta: number | null, gamma: numb
   // Calculate the rotation matrix
   const x = Math.cos(betaRad) * Math.cos(gammaRad);
   const y = Math.cos(betaRad) * Math.sin(gammaRad);
-  const z = Math.sin(betaRad);
 
   // Calculate the heading
   let heading = Math.atan2(y, x);
