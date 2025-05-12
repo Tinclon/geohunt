@@ -476,6 +476,7 @@ export const Game = () => {
         <Button
           variant="contained"
           onClick={handleDifficultyChange}
+          disabled={mode === 'bluebird' || mode === 'starling'}
           sx={{ 
             mt: 'auto',
             alignSelf: 'center',
@@ -489,6 +490,13 @@ export const Game = () => {
               bgcolor: difficulty === 'Hard' ? 'error.dark' : 
                       difficulty === 'Medium' ? 'warning.dark' : 
                       'success.dark',
+            },
+            '&.Mui-disabled': {
+              bgcolor: difficulty === 'Hard' ? 'error.dark' : 
+                      difficulty === 'Medium' ? 'warning.dark' : 
+                      'success.dark',
+              opacity: 0.5,
+              color: 'white'
             }
           }}
         >

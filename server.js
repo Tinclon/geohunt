@@ -51,7 +51,12 @@ app.get('/coordinates/:mode', (req, res) => {
     return res.status(404).json({ error: 'Coordinates not found' });
   }
 
-  res.json(coordinates);
+  // Return both coordinates and difficulty
+  res.json({
+    latitude: coordinates.latitude,
+    longitude: coordinates.longitude,
+    difficulty: coordinates.difficulty
+  });
 });
 
 // Health check endpoint
