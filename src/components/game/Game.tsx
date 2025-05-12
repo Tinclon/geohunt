@@ -182,7 +182,7 @@ export const Game = () => {
           prevMyLngRef.current = newLng;
           setMyCoordinates(position);
         },
-        (error) => {
+        () => {
           setError(null);
         }
       );
