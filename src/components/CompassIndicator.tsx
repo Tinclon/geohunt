@@ -21,6 +21,7 @@ const getDirectionSymbol = (degrees: number): string => {
 export const CompassIndicator = () => {
   const theme = useTheme();
   const [direction, setDirection] = useState<string>('↑');
+  const [degrees, setDegrees] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,6 +29,8 @@ export const CompassIndicator = () => {
 
     const handleOrientation = (event: DeviceOrientationEvent) => {
       if (event.alpha !== null) {
+        const normalized = (event.alpha + 360) % 360;
+        setDegrees(normalized);
         setDirection(getDirectionSymbol(event.alpha));
         setError(null);
       }
@@ -73,8 +76,8 @@ export const CompassIndicator = () => {
     <Box
       sx={{
         position: 'absolute',
-        top: 96, // Moved down further
-        right: 80,
+        top: 96,
+        right: 16,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -123,6 +126,7 @@ export const CompassIndicator = () => {
             sx={{
               color: theme.palette.primary.main,
               textShadow: `0 0 10px ${theme.palette.primary.main}`,
+              fontFamily: 'monospace',
             }}
           >
             {error ? '?' : direction}
@@ -151,6 +155,20 @@ export const CompassIndicator = () => {
         }}
       >
         S
+      </Typography>
+
+      {/* Degrees display */}
+      <Typography
+        variant="caption"
+        sx={{
+          color: theme.palette.primary.main,
+          textShadow: `0 0 5px ${theme.palette.primary.main}`,
+          fontSize: '0.75rem',
+          mt: 0.5,
+          fontFamily: 'monospace',
+        }}
+      >
+        {error ? '---' : `${Math.round(degrees)}°`}
       </Typography>
     </Box>
   );
