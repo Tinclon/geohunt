@@ -1,212 +1,16 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Button, Container, Paper, useTheme, IconButton } from '@mui/material';
+import { Box, Typography, Container, Paper, useTheme, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates } from '../services/locationService';
-import { GPSExplanation } from './GPSExplanation';
-import { CoordinatesExplanation } from './CoordinatesExplanation';
-import { CompassIndicator } from './CompassIndicator';
-
-type GameMode = 'hawk' | 'bluebird' | 'falcon' | 'starling';
-
-interface Coordinates {
-  latitude: number;
-  longitude: number;
-}
-
-interface LocationDisplayProps {
-  title: string;
-  coordinates: Coordinates | null;
-  highlightLat: number[];
-  highlightLng: number[];
-  color: string;
-  renderHighlightedNumber: (value: string, highlights: number[]) => React.ReactNode[];
-}
-
-const LocationDisplay = ({ title, coordinates, highlightLat, highlightLng, color, renderHighlightedNumber }: LocationDisplayProps) => {
-  if (!coordinates) {
-    return (
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h2" gutterBottom sx={{ color }}>
-          {title}
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'grey.500' }}>
-          Unknown
-        </Typography>
-      </Box>
-    );
-  }
-
-  return (
-    <Box sx={{ mb: 3 }}>
-      <Typography variant="h2" gutterBottom sx={{ color }}>
-        {title}
-      </Typography>
-      <Typography variant="body1">
-        Latitude: {renderHighlightedNumber(coordinates.latitude.toFixed(6), highlightLat)}
-      </Typography>
-      <Typography variant="body1">
-        Longitude: {renderHighlightedNumber(coordinates.longitude.toFixed(6), highlightLng)}
-      </Typography>
-    </Box>
-  );
-};
-
-interface DistanceDisplayProps {
-  distance: number | null;
-  highlightDistance: number[];
-  renderHighlightedNumber: (value: string, highlights: number[]) => React.ReactNode[];
-  theme: any;
-}
-
-const DistanceDisplay = ({ distance, highlightDistance, renderHighlightedNumber, theme }: DistanceDisplayProps) => (
-  <Box sx={{ mb: 3 }}>
-    <Typography variant="h2" gutterBottom sx={{ color: theme.palette.common.white }}>
-      Distance
-    </Typography>
-    <Typography 
-      variant="body1"
-      sx={{
-        ...(!distance && { color: theme.palette.grey[500] }),
-      }}
-    >
-      {distance !== null 
-        ? `${renderHighlightedNumber(Math.round(distance).toString(), highlightDistance)} meters`
-        : 'Unknown'}
-    </Typography>
-  </Box>
-);
-
-interface ModeSelectionProps {
-  onModeSelect: (mode: GameMode) => void;
-  onGPSExplanationClick: () => void;
-  onCoordinatesExplanationClick: () => void;
-  theme: any;
-}
-
-const ModeSelection = ({ onModeSelect, onGPSExplanationClick, onCoordinatesExplanationClick, theme }: ModeSelectionProps) => (
-  <Container maxWidth={false} sx={{ 
-    pt: 4,
-    width: '100%',
-    height: '95vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    px: 2
-  }}>
-    <Paper 
-      elevation={3} 
-      sx={{ 
-        p: 4, 
-        textAlign: 'center',
-        background: `linear-gradient(45deg, ${theme.palette.background.paper}, ${theme.palette.background.default})`,
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center'
-      }}
-    >
-      <Typography variant="h1" gutterBottom>
-        Choose Your Mode
-      </Typography>
-      <Box sx={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(2, 1fr)', 
-        gap: 2, 
-        mt: 2 
-      }}>
-        <Button
-          variant="contained"
-          color="error"
-          size="large"
-          onClick={() => onModeSelect('hawk')}
-          sx={{
-            width: '100%',
-            background: `linear-gradient(45deg, ${theme.palette.error.main}, ${theme.palette.error.dark})`,
-          }}
-        >
-          Hawk
-        </Button>
-        <Button
-          variant="contained"
-          color="info"
-          size="large"
-          onClick={() => onModeSelect('bluebird')}
-          sx={{
-            width: '100%',
-            background: `linear-gradient(45deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
-          }}
-        >
-          Bluebird
-        </Button>
-        <Button
-          variant="contained"
-          color="warning"
-          size="large"
-          onClick={() => onModeSelect('falcon')}
-          sx={{
-            width: '100%',
-            background: `linear-gradient(45deg, ${theme.palette.warning.main}, ${theme.palette.warning.dark})`,
-          }}
-        >
-          Falcon
-        </Button>
-        <Button
-          variant="contained"
-          color="success"
-          size="large"
-          onClick={() => onModeSelect('starling')}
-          sx={{
-            width: '100%',
-            background: `linear-gradient(45deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`,
-          }}
-        >
-          Starling
-        </Button>
-      </Box>
-      <Box sx={{ 
-        display: 'grid', 
-        gridTemplateColumns: '1fr 1fr', 
-        gap: 2,
-        mt: 4
-      }}>
-        <Button
-          variant="outlined"
-          size="large"
-          onClick={onGPSExplanationClick}
-          sx={{
-            width: '100%',
-            borderColor: theme.palette.grey[400],
-            color: theme.palette.grey[400],
-            '&:hover': {
-              borderColor: theme.palette.grey[200],
-              color: theme.palette.grey[200],
-            },
-          }}
-        >
-          How GPS Works
-        </Button>
-        <Button
-          variant="outlined"
-          size="large"
-          onClick={onCoordinatesExplanationClick}
-          sx={{
-            width: '100%',
-            borderColor: theme.palette.grey[400],
-            color: theme.palette.grey[400],
-            '&:hover': {
-              borderColor: theme.palette.grey[200],
-              color: theme.palette.grey[200],
-            },
-          }}
-        >
-          How Coordinates Work
-        </Button>
-      </Box>
-    </Paper>
-  </Container>
-);
+import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates } from '../../services/locationService';
+import { GPSExplanation } from '../GPSExplanation';
+import { CoordinatesExplanation } from '../CoordinatesExplanation';
+import { CompassIndicator } from '../CompassIndicator';
+import { LocationDisplay } from './LocationDisplay';
+import { DistanceDisplay } from './DistanceDisplay';
+import { ModeSelection } from './ModeSelection';
+import type { GameMode, Coordinates } from './types';
+import { findChangedDigits, getOpponentMode } from './utils';
 
 export const Game = () => {
   const theme = useTheme();
@@ -241,19 +45,6 @@ export const Game = () => {
   const [highlightOpponentLng, setHighlightOpponentLng] = useState<number[]>([]);
   const [highlightDistance, setHighlightDistance] = useState<number[]>([]);
 
-  const getOpponentMode = (currentMode: GameMode): GameMode => {
-    switch (currentMode) {
-      case 'hawk':
-        return 'bluebird';
-      case 'bluebird':
-        return 'hawk';
-      case 'falcon':
-        return 'starling';
-      case 'starling':
-        return 'falcon';
-    }
-  };
-
   const opponentMode = mode ? getOpponentMode(mode) : 'hawk';
 
   const handleModeSelect = (selectedMode: GameMode) => {
@@ -284,36 +75,6 @@ export const Game = () => {
   const handleCoordinatesExplanationClick = () => {
     setShowCoordinatesExplanation(true);
     localStorage.setItem('showCoordinatesExplanation', 'true');
-  };
-
-  const findChangedDigits = (oldStr: string, newStr: string): number[] => {
-    const changes: number[] = [];
-    let i = 0;
-    let j = 0;
-    
-    // Find the first difference
-    while (i < oldStr.length && j < newStr.length && oldStr[i] === newStr[j]) {
-      i++;
-      j++;
-    }
-    
-    // If we found a difference, mark all characters from this point until the next matching character
-    if (i < oldStr.length || j < newStr.length) {
-      const startDiff = i;
-      
-      // Find where the strings match again
-      while (i < oldStr.length && j < newStr.length && oldStr[i] !== newStr[j]) {
-        i++;
-        j++;
-      }
-      
-      // Add all positions that changed
-      for (let k = startDiff; k < i; k++) {
-        changes.push(k);
-      }
-    }
-    
-    return changes;
   };
 
   const updateMyLocation = async (saveToServer: boolean = false) => {
