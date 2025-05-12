@@ -302,7 +302,7 @@ export const Game = () => {
             pr: 6,
           }}
         >
-          You are a {mode}
+          {mode.charAt(0).toUpperCase() + mode.slice(1)}
         </Typography>
 
         {error && (
