@@ -94,18 +94,24 @@ export const Game = () => {
     localStorage.setItem('showCoordinatesExplanation', 'true');
   };
 
+  const updateDifficulty = async (newDifficulty: Difficulty, updateServer: boolean = true) => {
+    setDifficulty(newDifficulty);
+    localStorage.setItem('gameDifficulty', newDifficulty);
+    
+    if (updateServer && myCoordinates) {
+      await storeCoordinates(mode!, { ...myCoordinates, difficulty: newDifficulty });
+    }
+  };
+
   const handleDifficultyChange = async () => {
     const difficulties: Difficulty[] = ['Hard', 'Medium', 'Easy'];
     const currentIndex = difficulties.indexOf(difficulty);
     const nextIndex = (currentIndex + 1) % difficulties.length;
     const newDifficulty = difficulties[nextIndex];
-    setDifficulty(newDifficulty);
-    localStorage.setItem('gameDifficulty', newDifficulty);
-
-    // Update server with new difficulty immediately
-    if (mode && myCoordinates) {
-      await storeCoordinates(mode, myCoordinates, newDifficulty);
-    }
+    
+    // Only update server if we're in predator mode
+    const shouldUpdateServer = mode === 'hawk' || mode === 'falcon';
+    await updateDifficulty(newDifficulty, shouldUpdateServer);
   };
 
   const handleCoordinateSystemChange = () => {
@@ -175,7 +181,8 @@ export const Game = () => {
       setFormattedMyCoordinates({ latitude: newLat, longitude: newLng });
       
       if (mode && saveToServer) {
-        await storeCoordinates(mode, myPos, difficulty);
+        const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
+        await storeCoordinates(mode, { ...myPos, difficulty: currentDifficulty });
       }
       setError(null);
     } catch (err) {
@@ -218,13 +225,7 @@ export const Game = () => {
         // For prey modes, update difficulty to match opponent's difficulty
         if ((mode === 'bluebird' || mode === 'starling') && 'difficulty' in opponentPos) {
           const opponentDifficulty = opponentPos.difficulty as Difficulty;
-          setDifficulty(opponentDifficulty);
-          localStorage.setItem('gameDifficulty', opponentDifficulty);
-          
-          // Update server with new difficulty
-          if (myCoordinates) {
-            await storeCoordinates(mode, myCoordinates, opponentDifficulty);
-          }
+          await updateDifficulty(opponentDifficulty, false);
         }
       }
       setError(null);
@@ -279,7 +280,8 @@ export const Game = () => {
           
           // Save to server
           if (mode) {
-            storeCoordinates(mode, position, difficulty);
+            const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
+            storeCoordinates(mode, { ...position, difficulty: currentDifficulty });
           }
         },
         () => {
@@ -290,7 +292,8 @@ export const Game = () => {
       // Set up intervals for server updates and opponent location
       const saveLocationInterval = setInterval(() => {
         if (myCoordinates) {
-          storeCoordinates(mode, myCoordinates, difficulty);
+          const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
+          storeCoordinates(mode, { ...myCoordinates, difficulty: currentDifficulty });
         }
       }, 5 * 1000);
       const opponentInterval = setInterval(updateOpponentLocation, 5 * 1000);
@@ -532,7 +535,7 @@ export const Game = () => {
               fontWeight: 'bold'
             }}
           >
-            {coordinateSystem === 'decimal' ? 'DMS' : 'Decimal'}
+            {coordinateSystem === 'decimal' ? 'Decimal' : 'DMS'}
           </Button>
 
           <Button

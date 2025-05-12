@@ -1,7 +1,4 @@
-interface Coordinates {
-  latitude: number;
-  longitude: number;
-}
+import type { Coordinates } from '../components/game/types';
 
 const SERVER_URL = import.meta.env.PROD 
   ? 'https://geohunt.onrender.com'  // Production server URL
@@ -26,8 +23,8 @@ const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: 
 };
 
 // Store coordinates for a player
-export const storeCoordinates = async (mode: string, coordinates: Coordinates, difficulty: string): Promise<void> => {
-  await apiCall(`/coordinates/${mode}`, 'POST', { ...coordinates, difficulty });
+export const storeCoordinates = async (mode: string, coordinates: Coordinates): Promise<void> => {
+  await apiCall(`/coordinates/${mode}`, 'POST', coordinates);
 };
 
 // Get coordinates for a player
