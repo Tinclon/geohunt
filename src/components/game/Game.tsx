@@ -86,9 +86,6 @@ export const Game = () => {
       const newLat = formatCoordinate(myPos.latitude);
       const newLng = formatCoordinate(myPos.longitude);
 
-      console.log('Current prevMyLat:', prevMyLatRef.current);
-      console.log('New lat:', newLat);
-
       // Handle latitude changes
       if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
         const latChanges = findChangedDigits(prevMyLatRef.current, newLat);
@@ -104,7 +101,6 @@ export const Game = () => {
       }
 
       // Update previous values and coordinates
-      console.log('Setting prevMyLat to:', newLat);
       prevMyLatRef.current = newLat;
       prevMyLngRef.current = newLng;
       setMyCoordinates(myPos);
