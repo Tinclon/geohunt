@@ -29,6 +29,10 @@ export const Game = () => {
       ? savedRole as GameRole
       : null;
   });
+  const [readOnly, setReadOnly] = useState<boolean>(() => {
+    const savedReadOnly = localStorage.getItem('readOnly');
+    return savedReadOnly === null ? true : savedReadOnly === 'true';
+  });
   const [difficulty, setDifficulty] = useState<Difficulty>(() => {
     const savedDifficulty = localStorage.getItem('gameDifficulty');
     return (savedDifficulty === 'Hard' || savedDifficulty === 'Medium' || savedDifficulty === 'Easy')
@@ -169,7 +173,15 @@ export const Game = () => {
 
   const updateMyLocation = async (saveToServer: boolean = false) => {
     try {
-      const myPos = await getCurrentPosition();
+      let myPos;
+      if (readOnly) {
+        // In readOnly mode, get user's position from server instead of local sensors
+        myPos = await getOpponentCoordinates(role!);
+        if (!myPos) return;
+      } else {
+        myPos = await getCurrentPosition();
+      }
+
       const newLat = formatCoordinate(myPos.latitude, true);
       const newLng = formatCoordinate(myPos.longitude, false);
 
@@ -198,7 +210,7 @@ export const Game = () => {
       setMyCoordinates(myPos);
       setFormattedMyCoordinates({ latitude: newLat, longitude: newLng });
       
-      if (role && saveToServer) {
+      if (role && saveToServer && !readOnly) {
         const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
         await storeCoordinates(role, { ...myPos, difficulty: currentDifficulty });
       }
@@ -259,62 +271,70 @@ export const Game = () => {
   useEffect(() => {
     if (role) {
       // Initial updates
-      updateMyLocation(true); // Save initial position
+      updateMyLocation(!readOnly); // Only save to server if not in readOnly mode
       updateOpponentLocation();
 
-      // Set up watch position
-      watchIdRef.current = watchPosition(
-        (position) => {
-          // Store current coordinates as previous before updating
-          if (myCoordinates) {
-            setPrevMyCoordinates({ ...myCoordinates });
+      // Set up watch position only if not in readOnly mode
+      if (!readOnly) {
+        watchIdRef.current = watchPosition(
+          (position) => {
+            // Store current coordinates as previous before updating
+            if (myCoordinates) {
+              setPrevMyCoordinates({ ...myCoordinates });
+            }
+
+            // Update raw coordinates first
+            setMyCoordinates(position);
+
+            // Format coordinates according to current system
+            const newLat = formatCoordinate(position.latitude, true);
+            const newLng = formatCoordinate(position.longitude, false);
+
+            // Handle latitude changes
+            if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
+              const latChanges = findChangedChars(prevMyLatRef.current, newLat);
+              setHighlightMyLat(latChanges);
+              setTimeout(() => setHighlightMyLat([]), 400);
+            }
+
+            // Handle longitude changes
+            if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
+              const lngChanges = findChangedChars(prevMyLngRef.current, newLng);
+              setHighlightMyLng(lngChanges);
+              setTimeout(() => setHighlightMyLng([]), 400);
+            }
+
+            // Update previous values and formatted coordinates
+            prevMyLatRef.current = newLat;
+            prevMyLngRef.current = newLng;
+            setFormattedMyCoordinates({ latitude: newLat, longitude: newLng });
+            
+            // Save to server
+            if (role) {
+              const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
+              storeCoordinates(role, { ...position, difficulty: currentDifficulty });
+            }
+          },
+          () => {
+            setError(null);
           }
-
-          // Update raw coordinates first
-          setMyCoordinates(position);
-
-          // Format coordinates according to current system
-          const newLat = formatCoordinate(position.latitude, true);
-          const newLng = formatCoordinate(position.longitude, false);
-
-          // Handle latitude changes
-          if (prevMyLatRef.current && prevMyLatRef.current !== newLat) {
-            const latChanges = findChangedChars(prevMyLatRef.current, newLat);
-            setHighlightMyLat(latChanges);
-            setTimeout(() => setHighlightMyLat([]), 400);
-          }
-
-          // Handle longitude changes
-          if (prevMyLngRef.current && prevMyLngRef.current !== newLng) {
-            const lngChanges = findChangedChars(prevMyLngRef.current, newLng);
-            setHighlightMyLng(lngChanges);
-            setTimeout(() => setHighlightMyLng([]), 400);
-          }
-
-          // Update previous values and formatted coordinates
-          prevMyLatRef.current = newLat;
-          prevMyLngRef.current = newLng;
-          setFormattedMyCoordinates({ latitude: newLat, longitude: newLng });
-          
-          // Save to server
-          if (role) {
-            const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
-            storeCoordinates(role, { ...position, difficulty: currentDifficulty });
-          }
-        },
-        () => {
-          setError(null);
-        }
-      );
+        );
+      }
 
       // Set up intervals for server updates and opponent location
       const saveLocationInterval = setInterval(() => {
-        if (myCoordinates) {
+        if (myCoordinates && !readOnly) {
           const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
           storeCoordinates(role, { ...myCoordinates, difficulty: currentDifficulty });
         }
       }, 5 * 1000);
-      const opponentInterval = setInterval(updateOpponentLocation, 5 * 1000);
+
+      const opponentInterval = setInterval(() => {
+        updateOpponentLocation();
+        if (readOnly) {
+          updateMyLocation(false); // Update user location from server in readOnly mode
+        }
+      }, 5 * 1000);
 
       // Cleanup intervals and watch position
       return () => {
@@ -325,7 +345,7 @@ export const Game = () => {
         clearInterval(opponentInterval);
       };
     }
-  }, [role, coordinateSystem]);
+  }, [role, coordinateSystem, readOnly]);
 
   useEffect(() => {
     if (distance !== null) {
@@ -395,6 +415,12 @@ export const Game = () => {
     const newState = !isRunning;
     setIsRunning(newState);
     localStorage.setItem('isRunning', newState.toString());
+  };
+
+  const handleReadOnlyToggle = () => {
+    const newReadOnly = !readOnly;
+    setReadOnly(newReadOnly);
+    localStorage.setItem('readOnly', newReadOnly.toString());
   };
 
   if (showGPSExplanation) {
@@ -535,9 +561,27 @@ export const Game = () => {
                 sx={{
                   color: getRoleColor(role),
                   pr: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2
                 }}
               >
                 {role.charAt(0).toUpperCase() + role.slice(1)}
+                <Box
+                  component="span"
+                  onClick={handleReadOnlyToggle}
+                  sx={{
+                    cursor: 'pointer',
+                    opacity: readOnly ? 1 : 0.1,
+                    transition: 'opacity 0.3s ease',
+                    fontSize: '1.5rem',
+                    '&:hover': {
+                      opacity: readOnly ? 1 : 0.1
+                    }
+                  }}
+                >
+                  👀
+                </Box>
               </Typography>
             </>
           )}

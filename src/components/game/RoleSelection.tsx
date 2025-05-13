@@ -42,7 +42,7 @@ export const RoleSelection = ({ onRoleSelect, onGPSExplanationClick, onCoordinat
       <Box sx={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(2, 1fr)', 
-        gap: { xs: 1, sm: 1.5, md: 2 }, 
+        gap: { xs: 2, sm: 2.5, md: 3 }, 
         mt: { xs: 1, sm: 1.5, md: 2 },
         mb: { xs: 2, sm: 3, md: 4 }
       }}>
