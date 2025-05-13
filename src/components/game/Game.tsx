@@ -592,15 +592,15 @@ export const Game = () => {
                   onClick={handleReadOnlyToggle}
                   sx={{
                     cursor: 'pointer',
-                    opacity: readOnly ? 1 : 0.1,
+                    opacity: 1,
                     transition: 'opacity 0.3s ease',
                     fontSize: '1.5rem',
                     '&:hover': {
-                      opacity: readOnly ? 1 : 0.1
+                      opacity: 1
                     }
                   }}
                 >
-                  👀
+                  {readOnly ? '👀' : (role === 'hawk' || role === 'falcon' ? '⚔️' : '🎯')}
                 </Box>
               </Typography>
             </>
