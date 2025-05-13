@@ -116,15 +116,30 @@ export const Game = () => {
   };
 
   const updateDifficulty = async (newDifficulty: Difficulty, updateServer: boolean = true) => {
-    setDifficulty(newDifficulty);
-    localStorage.setItem('gameDifficulty', newDifficulty);
-    
-    if (updateServer && myCoordinates) {
-      await storeCoordinates(role!, { ...myCoordinates, difficulty: newDifficulty });
+    if (readOnly) {
+      // In readOnly mode, get difficulty from server
+      const serverData = await getOpponentCoordinates(role!);
+      if (serverData && 'difficulty' in serverData) {
+        setDifficulty(serverData.difficulty as Difficulty);
+        localStorage.setItem('gameDifficulty', serverData.difficulty as Difficulty);
+      }
+    } else {
+      setDifficulty(newDifficulty);
+      localStorage.setItem('gameDifficulty', newDifficulty);
+      
+      if (updateServer && myCoordinates) {
+        await storeCoordinates(role!, { ...myCoordinates, difficulty: newDifficulty });
+      }
     }
   };
 
   const handleDifficultyChange = async () => {
+    if (readOnly) {
+      // In readOnly mode, just fetch the current difficulty from server
+      await updateDifficulty(difficulty, false);
+      return;
+    }
+
     const difficulties: Difficulty[] = ['Hard', 'Medium', 'Easy'];
     const currentIndex = difficulties.indexOf(difficulty);
     const nextIndex = (currentIndex + 1) % difficulties.length;
@@ -273,6 +288,10 @@ export const Game = () => {
       // Initial updates
       updateMyLocation(!readOnly); // Only save to server if not in readOnly mode
       updateOpponentLocation();
+      if (readOnly) {
+        // In readOnly mode, get initial difficulty from server
+        updateDifficulty(difficulty, false);
+      }
 
       // Set up watch position only if not in readOnly mode
       if (!readOnly) {
@@ -333,6 +352,7 @@ export const Game = () => {
         updateOpponentLocation();
         if (readOnly) {
           updateMyLocation(false); // Update user location from server in readOnly mode
+          updateDifficulty(difficulty, false); // Update difficulty from server in readOnly mode
         }
       }, 5 * 1000);
 
