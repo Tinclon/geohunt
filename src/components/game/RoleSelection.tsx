@@ -133,7 +133,7 @@ export const RoleSelection = ({ onRoleSelect, onGPSExplanationClick, onCoordinat
             },
           }}
         >
-          How GPS Works
+          GPS
         </Button>
         <Button
           variant="outlined"
@@ -150,7 +150,7 @@ export const RoleSelection = ({ onRoleSelect, onGPSExplanationClick, onCoordinat
             },
           }}
         >
-          How Coordinates Work
+          Coordinates
         </Button>
       </Box>
     </Paper>

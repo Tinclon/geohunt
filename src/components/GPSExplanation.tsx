@@ -55,7 +55,7 @@ export const GPSExplanation = ({ onBack }: { onBack: () => void }) => {
           Unlike triangulation, which uses angles, trilateration uses distances from known points to find your position.
         </Typography>
 
-        <Typography variant="h3" gutterBottom sx={{ mt: 4, color: theme.palette.secondary.main }}>
+        <Typography variant="h3" gutterBottom sx={{ mt: 4, color: '#6a0dad' }}>
           Trilateration vs. Triangulation
         </Typography>
 
