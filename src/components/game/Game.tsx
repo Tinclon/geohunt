@@ -720,7 +720,7 @@ export const Game = () => {
           <Button
             variant="contained"
             onClick={handleDifficultyChange}
-            disabled={role === 'bluebird' || role === 'starling'}
+            disabled={readOnly || role === 'bluebird' || role === 'starling'}
             sx={{ 
               minWidth: 90,
               color: 'black',
