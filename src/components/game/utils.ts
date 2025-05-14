@@ -58,4 +58,17 @@ export const getOpponentRole = (currentRole: GameRole): GameRole => {
     case 'starling':
       return 'falcon';
   }
-}; 
+};
+
+export const getDirection = (myCoords: { latitude: number; longitude: number }, opponentCoords: { latitude: number; longitude: number }): string => {
+  const latDiff = opponentCoords.latitude - myCoords.latitude;
+  const lngDiff = opponentCoords.longitude - myCoords.longitude;
+
+  // Calculate angle in degrees
+  const angle = Math.atan2(lngDiff, latDiff) * (180 / Math.PI);
+
+  // Convert angle to cardinal direction
+  const directions = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
+  const index = Math.round(((angle + 360) % 360) / 45) % 8;
+  return directions[index];
+};

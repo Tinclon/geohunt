@@ -10,11 +10,9 @@ import { DistanceDisplay } from './DistanceDisplay';
 import { RoleSelection } from './RoleSelection.tsx';
 import { BrickoutGame } from './BrickoutGame';
 import { Viewer } from './Viewer';
-import type { GameRole, Coordinates } from './types';
+import type { GameRole, Coordinates, Difficulty } from './types';
 import type { CoordinateSystem } from './utils';
 import { findChangedChars, getOpponentRole, decimalToDMS, formatDMS } from './utils';
-
-type Difficulty = 'Hard' | 'Medium' | 'Easy';
 
 export const Game = () => {
   const theme = useTheme();
@@ -35,7 +33,7 @@ export const Game = () => {
   });
   const [difficulty, setDifficulty] = useState<Difficulty>(() => {
     const savedDifficulty = localStorage.getItem('gameDifficulty');
-    return (savedDifficulty === 'Hard' || savedDifficulty === 'Medium' || savedDifficulty === 'Easy')
+    return (savedDifficulty === 'Extreme' || savedDifficulty === 'Hard' || savedDifficulty === 'Medium' || savedDifficulty === 'Easy')
       ? savedDifficulty as Difficulty
       : 'Hard';
   });
@@ -140,7 +138,7 @@ export const Game = () => {
       return;
     }
 
-    const difficulties: Difficulty[] = ['Hard', 'Medium', 'Easy'];
+    const difficulties: Difficulty[] = ['Extreme', 'Hard', 'Medium', 'Easy'];
     const currentIndex = difficulties.indexOf(difficulty);
     const nextIndex = (currentIndex + 1) % difficulties.length;
     const newDifficulty = difficulties[nextIndex];
@@ -724,20 +722,26 @@ export const Game = () => {
             sx={{ 
               minWidth: 90,
               color: 'black',
-              background: difficulty === 'Hard' ? 
+              background: difficulty === 'Extreme' ?
+                `linear-gradient(45deg, #6a0dad, #4b0082)` :
+                difficulty === 'Hard' ? 
                 `linear-gradient(45deg, ${theme.palette.error.main}, ${theme.palette.error.dark})` :
                 difficulty === 'Medium' ?
                 `linear-gradient(45deg, ${theme.palette.warning.main}, ${theme.palette.warning.dark})` :
                 `linear-gradient(45deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`,
               '&:hover': {
-                background: difficulty === 'Hard' ? 
+                background: difficulty === 'Extreme' ?
+                  `linear-gradient(45deg, #4b0082, #6a0dad)` :
+                  difficulty === 'Hard' ? 
                   `linear-gradient(45deg, ${theme.palette.error.dark}, ${theme.palette.error.main})` :
                   difficulty === 'Medium' ?
                   `linear-gradient(45deg, ${theme.palette.warning.dark}, ${theme.palette.warning.main})` :
                   `linear-gradient(45deg, ${theme.palette.success.dark}, ${theme.palette.success.main})`,
               },
               '&.Mui-disabled': {
-                background: difficulty === 'Hard' ? 
+                background: difficulty === 'Extreme' ?
+                  `linear-gradient(45deg, #4b0082, #6a0dad)` :
+                  difficulty === 'Hard' ? 
                   `linear-gradient(45deg, ${theme.palette.error.dark}, ${theme.palette.error.main})` :
                   difficulty === 'Medium' ?
                   `linear-gradient(45deg, ${theme.palette.warning.dark}, ${theme.palette.warning.main})` :

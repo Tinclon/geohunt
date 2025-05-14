@@ -1,18 +1,17 @@
+import React from 'react';
 import { Box, Typography } from '@mui/material';
-import type { DistanceDisplayProps } from './types';
+import { getDirection } from './utils';
+import type { Coordinates, Difficulty } from './types';
 
-const getDirection = (myCoords: { latitude: number; longitude: number }, opponentCoords: { latitude: number; longitude: number }): string => {
-  const latDiff = opponentCoords.latitude - myCoords.latitude;
-  const lngDiff = opponentCoords.longitude - myCoords.longitude;
-  
-  // Calculate angle in degrees
-  const angle = Math.atan2(lngDiff, latDiff) * (180 / Math.PI);
-  
-  // Convert angle to cardinal direction
-  const directions = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
-  const index = Math.round(((angle + 360) % 360) / 45) % 8;
-  return directions[index];
-};
+interface DistanceDisplayProps {
+  distance: number | null;
+  highlightDistance: number[];
+  renderHighlightedNumber: (value: string, highlights: number[]) => React.ReactNode[];
+  theme: any;
+  myCoordinates: Coordinates | null;
+  opponentCoordinates: Coordinates | null;
+  difficulty: Difficulty;
+}
 
 export const DistanceDisplay = ({ 
   distance, 
@@ -44,7 +43,9 @@ export const DistanceDisplay = ({
           minWidth: '80px',
           fontFamily: '"Roboto Mono", "SF Mono", "Consolas", "Liberation Mono", "Menlo", "Courier", monospace'
         }}>
-          {distance !== null ? (
+          {difficulty === 'Extreme' ? (
+            'Hidden'
+          ) : distance !== null ? (
             <>
               {renderHighlightedNumber(distance.toString(), highlightDistance)}
               &nbsp;{distance === 1 ? 'meter' : 'meters'}

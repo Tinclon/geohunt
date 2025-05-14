@@ -1,9 +1,10 @@
 export type GameRole = 'hawk' | 'bluebird' | 'falcon' | 'starling';
+export type Difficulty = 'Extreme' | 'Hard' | 'Medium' | 'Easy';
 
 export interface Coordinates {
   latitude: number;
   longitude: number;
-  difficulty?: 'Hard' | 'Medium' | 'Easy';
+  difficulty?: Difficulty;
 }
 
 export interface LocationDisplayProps {
@@ -14,7 +15,7 @@ export interface LocationDisplayProps {
   color: string;
   renderHighlightedNumber: (value: string, highlights: number[]) => React.ReactNode[];
   prevCoordinates: { latitude: string; longitude: string; } | null;
-  difficulty: 'Hard' | 'Medium' | 'Easy';
+  difficulty: Difficulty;
 }
 
 export interface DistanceDisplayProps {
@@ -24,7 +25,7 @@ export interface DistanceDisplayProps {
   theme: any;
   myCoordinates: Coordinates | null;
   opponentCoordinates: Coordinates | null;
-  difficulty: 'Hard' | 'Medium' | 'Easy';
+  difficulty: Difficulty;
 }
 
 export interface RoleSelectionProps {
