@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Typography, Container, Paper, useTheme, IconButton, Button, Box } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getCurrentPosition, getOpponentCoordinates, calculateDistance, storeCoordinates, watchPosition } from '../../services/locationService';
+import { getCurrentPosition, getCoordinatesForRole, calculateDistance, storeCoordinatesForRole, watchPosition } from '../../services/locationService';
 import { GPSExplanation } from '../GPSExplanation';
 import { CoordinatesExplanation } from '../CoordinatesExplanation';
 import { CompassIndicator } from '../CompassIndicator';
@@ -116,7 +116,7 @@ export const Game = () => {
   const updateDifficulty = async (newDifficulty: Difficulty, updateServer: boolean = true) => {
     if (readOnly) {
       // In readOnly mode, get difficulty from server
-      const serverData = await getOpponentCoordinates(role!);
+      const serverData = await getCoordinatesForRole(role!);
       if (serverData && 'difficulty' in serverData) {
         setDifficulty(serverData.difficulty as Difficulty);
         localStorage.setItem('gameDifficulty', serverData.difficulty as Difficulty);
@@ -126,7 +126,7 @@ export const Game = () => {
       localStorage.setItem('gameDifficulty', newDifficulty);
       
       if (updateServer && myCoordinates) {
-        await storeCoordinates(role!, { ...myCoordinates, difficulty: newDifficulty });
+        await storeCoordinatesForRole(role!, { ...myCoordinates, difficulty: newDifficulty });
       }
     }
   };
@@ -189,7 +189,7 @@ export const Game = () => {
       let myPos;
       if (readOnly) {
         // In readOnly mode, get user's position from server instead of local sensors
-        myPos = await getOpponentCoordinates(role!);
+        myPos = await getCoordinatesForRole(role!);
         if (!myPos) return;
       } else {
         myPos = await getCurrentPosition();
@@ -225,7 +225,7 @@ export const Game = () => {
       
       if (role && saveToServer && !readOnly) {
         const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
-        await storeCoordinates(role, { ...myPos, difficulty: currentDifficulty });
+        await storeCoordinatesForRole(role, { ...myPos, difficulty: currentDifficulty });
       }
       setError(null);
     } catch (err) {
@@ -235,7 +235,7 @@ export const Game = () => {
 
   const updateOpponentLocation = async () => {
     try {
-      const opponentPos = await getOpponentCoordinates(opponentRole);
+      const opponentPos = await getCoordinatesForRole(opponentRole);
       if (opponentPos) {
         const newLat = formatCoordinate(opponentPos.latitude, true);
         const newLng = formatCoordinate(opponentPos.longitude, false);
@@ -329,7 +329,7 @@ export const Game = () => {
             // Save to server
             if (role) {
               const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
-              storeCoordinates(role, { ...position, difficulty: currentDifficulty });
+              storeCoordinatesForRole(role, { ...position, difficulty: currentDifficulty });
             }
           },
           () => {
@@ -342,7 +342,7 @@ export const Game = () => {
       const saveLocationInterval = setInterval(() => {
         if (myCoordinates && !readOnly) {
           const currentDifficulty = localStorage.getItem('gameDifficulty') as Difficulty || 'Hard';
-          storeCoordinates(role, { ...myCoordinates, difficulty: currentDifficulty });
+          storeCoordinatesForRole(role, { ...myCoordinates, difficulty: currentDifficulty });
         }
       }, 5 * 1000);
 

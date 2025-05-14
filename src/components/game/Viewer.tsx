@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Typography, Container, Paper, useTheme, IconButton, Box, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getOpponentCoordinates, calculateDistance } from '../../services/locationService';
+import { getCoordinatesForRole, calculateDistance } from '../../services/locationService';
 import type { Coordinates } from './types';
 import { formatDMS, decimalToDMS } from './utils';
 import type { CoordinateSystem } from './utils';
@@ -67,7 +67,7 @@ export const Viewer = ({ onBack }: { onBack: () => void }) => {
     
     for (const role of roles) {
       try {
-        const coordinates = await getOpponentCoordinates(role);
+        const coordinates = await getCoordinatesForRole(role);
         if (coordinates) {
           setRoleData(prev => ({
             ...prev,

@@ -2,7 +2,7 @@ import type { Coordinates, Difficulty } from '../components/game/types';
 
 const SERVER_URL = import.meta.env.PROD 
   ? 'https://geohunt.onrender.com'  // Production server URL
-  : 'http://localhost:3000';               // Development server URL
+  : 'http://localhost:3000';        // Development server URL
 
 // Helper function to make API calls
 const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: any) => {
@@ -23,12 +23,12 @@ const apiCall = async (endpoint: string, method: 'GET' | 'POST' = 'GET', body?: 
 };
 
 // Store coordinates for a player
-export const storeCoordinates = async (role: string, coordinates: Coordinates & { difficulty?: Difficulty }): Promise<void> => {
+export const storeCoordinatesForRole = async (role: string, coordinates: Coordinates & { difficulty?: Difficulty }): Promise<void> => {
   await apiCall(`/coordinates/${role}`, 'POST', coordinates);
 };
 
 // Get coordinates for a player
-export const getOpponentCoordinates = async (role: string): Promise<(Coordinates & { difficulty?: Difficulty }) | null> => {
+export const getCoordinatesForRole = async (role: string): Promise<(Coordinates & { difficulty?: Difficulty }) | null> => {
   try {
     return await apiCall(`/coordinates/${role}`);
   } catch (error) {
