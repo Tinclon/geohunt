@@ -29,7 +29,7 @@ export const Game = () => {
   });
   const [readOnly, setReadOnly] = useState<boolean>(() => {
     const savedReadOnly = localStorage.getItem('readOnly');
-    return savedReadOnly === null ? true : savedReadOnly === 'true';
+    return savedReadOnly === null ? false : savedReadOnly === 'true';
   });
   const [difficulty, setDifficulty] = useState<Difficulty>(() => {
     const savedDifficulty = localStorage.getItem('gameDifficulty');
